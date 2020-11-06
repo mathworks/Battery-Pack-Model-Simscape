@@ -1,0 +1,957 @@
+component batteryMultiDimModel 
+% Battery Multi-D Model : 7 : rotates
+% This block models a battery module. It consists of multiple battery cells 
+% that can be configured in series and parallel. Parallel strings of cells 
+% are connected in series to form a battery module. Multiple copies of this 
+% battery module can be connected in series and/or parallel to create a 
+% full battery pack, such as is used for electric vehicles. The underlying 
+% cell model is the Battery (Table-Based) block from the Simscape 
+% Electrical library.
+
+% Copyright 2020 The MathWorks, Inc.
+
+% Define nodes for the model (electrical and thermal)
+nodes
+    p = foundation.electrical.electrical;   % pos 
+    n = foundation.electrical.electrical;   % neg 
+    H = foundation.thermal.thermal;         % Amb
+end
+
+% Define output data for all cells
+outputs
+    outputCellSOC = {ones(1,Ns*Np),'1'};      % SOC
+    outputCellTemp= {ones(1,Ns*Np),'K'};      % Temp
+end
+
+% Define input for the model (switching for passive balancing, coolant 
+% flowrate and temperature control to model battery heat removal)
+inputs
+    passiveSWonOff = {zeros(1,Ns),'1'};     % SW
+    frac  = {1, '1'};                       % FlwR
+    delT  = {0,'K'};                        % FlwT
+end
+
+parameters
+    modelComplexity=batteryModule.batteryAbstractionLevel.Detailed; % Select model fidelity
+    % Module Definition
+    Ns=5;                                                           % Number of series connected strings, Ns
+    Np=2;                                                           % Number of parallel cells per string, Np
+    cellTypeSelection=batteryModule.batteryTypeSelection.Pouch;     % Choose cell type
+    cellHeight={0.650,'m'};                                         % Cell height
+    cellWidth={0.200,'m'};                                          % Cell width
+    cellThickness={0.020,'m'};                                      % Cell thickness
+    cellDiameter={0.018,'m'};                                       % Cell diameter
+    cellCylinLine=3;                                                % Number of cylindrical cells in a straight line
+    moduleExternalR={0,'Ohm'};                                      % Accessory total resistance   
+    LUTpointsTemp={[273.15 298.15 323.15],'K'};                     % Vector of temperatures, T
+    LUTpointsSOC={[0 0.25 0.75 1],'1'};                             % Vector of state-of-charge values, SOC
+    cellAHvector={[2.9 4.1 4.2],'A*hr'};                            % Single cell baseline ampere-hour rating, AH(T)
+    moduleCellAHpercentVar={ones(1,10),'1'};                        % Cell ampere-hour rating variation in percent from baseline
+    cellThermalMass={500,'J/K'};                                    % Cell thermal mass
+    cellThermalCond={0.8,'W/(m * K)'};                              % Cell thermal conductivity
+    cellHeatTrCoeff={1,'W/(m^2 * K)'};                              % Heat transfer coefficient to ambient
+    cellTemp={300*ones(1,10),'K'};                                  % Vector of initial cell temperatures, ini_T(Ns*Np) 
+    cellSOC={ones(1,10),'1'};                                       % Vector of initial cell state of charge, ini_SOC(Ns*Np)
+    LUTpointsFlowrate={[0.01 0.02 0.03 0.04 0.05 0.06],'kg/s'};     % Vector of coolant flow rates, L
+    moduleCooling={zeros(3,6,10),'W/K'};                            % Effective rate of coolant heat transfer from each cell, Q(T,L,Ns*Np)
+    moduleExtHeat={zeros(1,10),'W'};                                % External heat, Q_ext(Ns*Np) 
+    moduleCellBalancing=batteryModule.batteryCellBalancing.None;% Cell balancing
+    passiveShuntR={50,'Ohm'};                                       % Shunt resistor
+    passiveSWclosedR={0.01,'Ohm'};                                  % Switch closed resistance
+    passiveSWopenCond={1e-8,'1/Ohm'};                               % Switch open conductance
+    passiveSWthreshold={0.5,'1'};                                   % Switch operation threshold
+    %
+    % Cell Model
+    prm_dir = ee.enum.battery.prm_dir.noCurrentDirectionality;      % Current directionality
+    V0_mat = {[3.20 3.10 3.14; ...
+        3.25 3.27 3.30; ...
+        3.28 3.31 3.34; ...
+        3.33 3.50 3.59], 'V'};                            % No-load voltage, V0(SOC,T)
+    R0_mat = {[0.030 0.015 0.002; ...
+        0.040 0.017 0.008; ...
+        0.039 0.012 0.006; ...
+        0.027 0.013 0.021], 'Ohm'};                       % Terminal resistance, R0(SOC,T)
+    R0_dis_mat = {[0.030 0.015 0.002; ...
+        0.040 0.017 0.008; ...
+        0.039 0.012 0.006; ...
+        0.027 0.013 0.021], 'Ohm'};                       % Terminal resistance during discharging, R0(SOC,T)
+	R0_ch_mat = {[0.030 0.015 0.002; ...
+        0.040 0.017 0.008; ...
+        0.039 0.012 0.006; ...
+        0.027 0.013 0.021], 'Ohm'};                       % Terminal resistance during charging, R0(SOC,T)    
+    moduleCellR0PercentVar = {ones(1,10),'1'};            % Cell terminal resistance R0 variation from baseline R0
+
+    prm_leak = ee.enum.battery.prm_leak.disabled;         % Self-discharge
+    Rleak_vec = {[8e3 7e3 6e3], 'Ohm'};                   % Self-discharge resistance, Rleak(T)
+    moduleCellLeakPercentVar = {ones(1,10),'1'};          % Cell Self-discharge resistance variation from baseline, Rleak_var(Ns*Np)
+
+    extrapolation_option = ee.enum.extrapolation.nearest; % Extrapolation method for all tables
+        
+    prm_dyn = ee.enum.battery.prm_dyn.off;         % Charge dynamics
+    R1_mat = {[0.089 0.076 0.010; ...
+        0.042 0.022 0.099; ...
+        0.019 0.007 0.002; ...
+        0.051 0.043 0.029], 'Ohm'};                % First polarization resistance, R1(SOC,T)
+    tau1_mat = {[44 148 235; ...
+        93 110 1000; ...
+        19 27 133; ...
+        0.5 22 3], 's'};                           % First time constant, tau1(SOC,T)
+    R2_mat = {[0.014 0.382 0.407; ...
+        0.028 0.006 0.007; ...
+        0.014 0.007 0.006; ...
+        0.333 0.956 0.912], 'Ohm'};                % Second polarization resistance, R2(SOC,T)
+    tau2_mat = {[1 44 5644; ...
+        11 24 506; ...
+        2 14 330; ...
+        3310 13419 30216], 's'};                   % Second time constant, tau2(SOC,T)
+    R3_mat = {[0.014 0.382 0.407; ...
+        0.028 0.006 0.007; ...
+        0.014 0.007 0.006; ...
+        0.333 0.956 0.912], 'Ohm'};                % Third polarization resistance, R3(SOC,T)
+    tau3_mat = {[1 44 5644; ...
+        11 24 506; ...
+        2 14 330; ...
+        3310 13419 30216], 's'};                   % Third time constant, tau3(SOC,T)    
+    R4_mat = {[0.014 0.382 0.407; ...
+        0.028 0.006 0.007; ...
+        0.014 0.007 0.006; ...
+        0.333 0.956 0.912], 'Ohm'};                % Fourth polarization resistance, R4(SOC,T)
+    tau4_mat = {[1 44 5644; ...
+        11 24 506; ...
+        2 14 330; ...
+        3310 13419 30216], 's'};                   % Fourth time constant, tau4(SOC,T)
+    R5_mat = {[0.014 0.382 0.407; ...
+        0.028 0.006 0.007; ...
+        0.014 0.007 0.006; ...
+        0.333 0.956 0.912], 'Ohm'};                % Fifth polarization resistance, R5(SOC,T)
+    tau5_mat = {[1 44 5644; ...
+        11 24 506; ...
+        2 14 330; ...
+        3310 13419 30216], 's'};                   % Fifth time constant, tau5(SOC,T)
+    
+    prm_fade = ee.enum.battery.prm_fade.equations; % Fade characteristics defined by
+    
+    N0 = {100, '1'};                        % Number of discharge cycles, N
+    dV0 = {0, '1'};                         % Change in no-load voltage after N discharge cycles (%)
+    dR0 = {0, '1'};                         % Change in terminal resistance after N discharge cycles (%)
+    dAH = {0, '1'};                         % Change in ampere-hour rating after N discharge cycles (%)
+    dRleak = {0, '1'};                      % Change in self-discharge resistance after N discharge cycles (%)
+    dR1 = {0, '1'};                         % Change in first polarization resistance after N discharge cycles (%)
+    dR2 = {0, '1'};                         % Change in second polarization resistance after N discharge cycles (%)
+    dR3 = {0, '1'};                         % Change in third polarization resistance after N discharge cycles (%)
+    dR4 = {0, '1'};                         % Change in fourth polarization resistance after N discharge cycles (%)
+    dR5 = {0, '1'};                         % Change in fifth polarization resistance after N discharge cycles (%)
+    
+    N0vec = {[100 200 300], '1'};           % Vector of discharge cycle values, N
+    Tfadevec = {[298.15 323.15], 'K'};      % Vector of temperatures for fade data, Tfade
+    
+    dV0vec = {[0 0 0], '1'};                % Percentage change in no-load voltage, dV0(N)
+    dR0vec = {[0 0 0], '1'};                % Percentage change in terminal resistance, dR0(N)
+    dAHvec = {[0 0 0], '1'};                % Percentage change in ampere-hour rating, dAH(N)
+    dRleakvec = {[0 0 0], '1'};             % Percentage change in self-discharge resistance, dRleak(N)
+    dR1vec = {[0 0 0], '1'};                % Percentage change in first polarization resistance, dR1(N)
+    dR2vec = {[0 0 0], '1'};                % Percentage change in second polarization resistance, dR2(N)
+    dR3vec = {[0 0 0], '1'};                % Percentage change in third polarization resistance, dR3(N)
+    dR4vec = {[0 0 0], '1'};                % Percentage change in fourth polarization resistance, dR4(N)
+    dR5vec = {[0 0 0], '1'};                % Percentage change in fifth polarization resistance, dR5(N)
+    
+    dV0mat = {[0 0; 0 0; 0 0], '1'};        % Percentage change in no-load voltage, dV0(N,Tfade)
+    dR0mat = {[0 0; 0 0; 0 0], '1'};        % Percentage change in terminal resistance, dR0(N,Tfade)
+    dAHmat = {[0 0; 0 0; 0 0], '1'};        % Percentage change in ampere-hour rating, dAH(N,Tfade)
+    dRleakmat = {[0 0; 0 0; 0 0], '1'};     % Percentage change in self-discharge resistance, dRleak(N,Tfade)
+    dR1mat = {[0 0; 0 0; 0 0], '1'};        % Percentage change in first polarization resistance, dR1(N,Tfade)
+    dR2mat = {[0 0; 0 0; 0 0], '1'};        % Percentage change in second polarization resistance, dR2(N,Tfade)
+    dR3mat = {[0 0; 0 0; 0 0], '1'};        % Percentage change in third polarization resistance, dR3(N,Tfade)
+    dR4mat = {[0 0; 0 0; 0 0], '1'};        % Percentage change in fourth polarization resistance, dR4(N,Tfade)
+    dR5mat = {[0 0; 0 0; 0 0], '1'};        % Percentage change in fifth polarization resistance, dR5(N,Tfade)
+
+end
+
+% Parameter definition for internal usage; processing user defined parameters
+parameters(Access=private)
+    cellSOC0=cellSOC;
+    cellTemp0=cellTemp;
+    flowrate0=LUTpointsFlowrate;
+    moduleCooling0=moduleCooling;
+    minLength={1e-4,'m'}; 
+    minThermalK={1e-3, 'W/(m * K)'}; 
+    % Module uses, by default, Temperature dependent Cell Model
+    T_dependence=ee.enum.temperature_dependence.yes;
+    %
+    % Data processing for Lumped Model Parameters
+    moduleCooling_val=value(moduleCooling,'W/K');
+    moduleCooling2Dlumped=permute(sum(permute(moduleCooling_val,[3,1,2])),[2,3,1]);
+    moduleCooling2Dlumped_val=repmat(moduleCooling2Dlumped,[1,1,Ns*Np]);
+    %
+    % Effective rate of coolant heat transfer from the entire Module
+    lumped_moduleCooling={moduleCooling2Dlumped_val,'W/K'};
+    % 
+    % All lumped_* parameters below are averaged quantities for the entire module
+    lumped_cellSOC0=ones(1,Ns*Np)*sum([cellSOC])/(Ns*Np);
+    lumped_cellTemp0=ones(1,Ns*Np)*sum([cellTemp])/(Ns*Np);
+    lumped_V0_mat=V0_mat*Ns;
+    lumped_R0_mat=R0_mat*(Ns/Np)*(sum(moduleCellR0PercentVar)/(Ns*Np));
+    lumped_R0_dis_mat=R0_dis_mat*(Ns/Np)*(sum(moduleCellR0PercentVar)/(Ns*Np));
+    lumped_R0_ch_mat=R0_ch_mat*(Ns/Np)*(sum(moduleCellR0PercentVar)/(Ns*Np));
+    lumped_R1_mat=R1_mat*Ns/Np;
+    lumped_R2_mat=R2_mat*Ns/Np;
+    lumped_R3_mat=R3_mat*Ns/Np;
+    lumped_R4_mat=R4_mat*Ns/Np;
+    lumped_R5_mat=R5_mat*Ns/Np;
+    lumped_cellAHvector=cellAHvector*Np; 
+end
+
+annotations
+    p             : Side=Top;
+    n             : Side=Top;
+    H             : Side=Right;
+    outputCellSOC : Side=Left;
+    outputCellTemp: Side=Left;
+    passiveSWonOff: Side=Left;
+    frac          : Side=Right;
+    delT          : Side=Right;
+    UILayout = [UIGroup("Model Complexity",modelComplexity) 
+                UIGroup("Lookup Table Points",LUTpointsTemp, cellAHvector, LUTpointsSOC) 
+                UIGroup("Cell Electrical",V0_mat, prm_dir, R0_mat, R0_dis_mat, R0_ch_mat, prm_leak, Rleak_vec, extrapolation_option, prm_dyn, R1_mat, tau1_mat, R2_mat, tau2_mat, R3_mat, tau3_mat, R4_mat, tau4_mat, R5_mat, tau5_mat,  prm_fade, N0, dV0, dR0, dAH, dRleak, dR1, dR2, dR3, dR4, dR5, N0vec, Tfadevec, dV0vec, dR0vec, dAHvec, dRleakvec, dR1vec, dR2vec, dR3vec, dR4vec, dR5vec, dV0mat, dR0mat, dAHmat, dRleakmat, dR1mat, dR2mat, dR3mat, dR4mat, dR5mat) 
+                UIGroup("Module Electrical",Ns, Np, cellTypeSelection, cellHeight, cellWidth, cellThickness, cellDiameter, cellCylinLine, moduleExternalR,moduleCellBalancing,passiveShuntR,passiveSWclosedR,passiveSWopenCond,passiveSWthreshold) 
+                UIGroup("Cell Thermal",cellThermalMass, cellThermalCond, cellHeatTrCoeff)
+                UIGroup("Module Thermal", LUTpointsFlowrate, moduleCooling, moduleExtHeat) 
+                UIGroup("Cell-to-Cell Variation",cellTemp, cellSOC, moduleCellAHpercentVar,moduleCellLeakPercentVar,moduleCellR0PercentVar)]
+end
+
+if(cellTypeSelection == batteryModule.batteryTypeSelection.Pouch || ...
+        cellTypeSelection == batteryModule.batteryTypeSelection.Can)
+    annotations
+        Icon = 'batteryModuleIcon_Rect.png'
+    end
+elseif cellTypeSelection == batteryModule.batteryTypeSelection.RegularCylindrical
+    annotations
+        Icon = 'batteryModuleIcon_CylReg.png'
+    end    
+elseif cellTypeSelection == batteryModule.batteryTypeSelection.CompactCylindrical
+    annotations
+        Icon = 'batteryModuleIcon_CylCom.png'
+    end    
+else
+    annotations
+        Icon = 'batteryMultiDimModel.png'
+    end    
+end
+   
+if modelComplexity == batteryModule.batteryAbstractionLevel.Lumped
+    annotations
+        [moduleCellBalancing] : ExternalAccess=none;
+    end    
+else
+    %
+end
+
+% Check for cell balancing, if enabled
+if(moduleCellBalancing == batteryModule.batteryCellBalancing.None || ...
+        modelComplexity == batteryModule.batteryAbstractionLevel.Lumped)
+    annotations
+        [passiveShuntR,passiveSWclosedR,passiveSWopenCond,...
+            passiveSWthreshold,passiveSWonOff] : ExternalAccess=none;
+    end
+else
+    % All parameters for cell balancing must be greater than zero
+    equations
+        assert(passiveShuntR>0,'Shunt resistance must be greater than zero');
+        assert(passiveSWclosedR>0,'Switch closed resistance must be greater than zero');
+        assert(passiveSWopenCond>0,'Switch open conductance must be greater than zero');
+    end
+end
+        
+if prm_leak == ee.enum.battery.prm_leak.disabled
+    annotations
+        [Rleak_vec,moduleCellLeakPercentVar] : ExternalAccess=none;
+    end
+else
+    % Check if values of parameter is defined at all temperature points
+    equations
+        assert(all(Rleak_vec>0));
+        assert(length(Rleak_vec) == length(LUTpointsTemp));
+    end
+    if modelComplexity == batteryModule.batteryAbstractionLevel.lumped
+        annotations
+            [moduleCellLeakPercentVar] : ExternalAccess=none;
+        end
+    else
+        equations
+            assert(all(moduleCellLeakPercentVar>0),'Cell leak percent variation vector must be greater than zero');
+            assert(length(moduleCellLeakPercentVar) == Ns*Np,'Cell leak percent variation vector must be of size equal to number of cells');
+        end
+    end
+end
+
+% Check for cell dynamics and make appropiate resistance(s) and time 
+% constant(s) visible
+if prm_dyn == ee.enum.battery.prm_dyn.rc1
+    annotations
+        [R2_mat,tau2_mat, ...
+            R3_mat,tau3_mat, ...
+            R4_mat,tau4_mat, ...
+            R5_mat,tau5_mat]: ExternalAccess=none;
+    end
+elseif prm_dyn == ee.enum.battery.prm_dyn.rc2
+    annotations
+        [R3_mat,tau3_mat, ...
+            R4_mat,tau4_mat, ...
+            R5_mat,tau5_mat]: ExternalAccess=none;
+    end
+elseif prm_dyn == ee.enum.battery.prm_dyn.rc3
+    annotations
+        [R4_mat,tau4_mat, ...
+            R5_mat,tau5_mat]: ExternalAccess=none;
+    end
+elseif prm_dyn == ee.enum.battery.prm_dyn.rc4
+    annotations
+        [R5_mat,tau5_mat]: ExternalAccess=none;
+    end
+elseif prm_dyn == ee.enum.battery.prm_dyn.rc5
+    % do nothing
+else
+    annotations
+        [R1_mat,tau1_mat, ...
+            R2_mat,tau2_mat, ...
+            R3_mat,tau3_mat, ...
+            R4_mat,tau4_mat, ...
+            R5_mat,tau5_mat]: ExternalAccess=none;
+    end
+end
+
+% 
+
+if prm_dir == ee.enum.battery.prm_dir.noCurrentDirectionality
+    annotations
+        [R0_dis_mat,R0_ch_mat] : ExternalAccess=none;
+    end
+      
+    equations
+        assert(all(R0_mat(:)>0));
+        assert(all(size(R0_mat) == [length(LUTpointsSOC) length(LUTpointsTemp)]));
+    end
+else
+    annotations
+        [R0_mat] : ExternalAccess=none;
+    end
+      
+    equations
+        assert(all(R0_ch_mat(:)>0));
+        assert(all(R0_dis_mat(:)>0));
+        % Parameter R0 must be defined at all SOC and Temperature lookup table points 
+        assert(all(size(R0_ch_mat) == [length(LUTpointsSOC) length(LUTpointsTemp)]));
+        assert(all(size(R0_dis_mat) == [length(LUTpointsSOC) length(LUTpointsTemp)]));
+    end
+end
+
+equations
+    assert(all(LUTpointsTemp>0));
+    assert(all(diff(LUTpointsTemp)>0));
+    assert(all(cellAHvector>0));
+    assert(all(V0_mat(:)>=0));
+    assert(all(size(V0_mat) == [length(LUTpointsSOC) length(LUTpointsTemp)]));
+    assert(length(cellAHvector) == length(LUTpointsTemp));
+end
+   
+% Check for cell dynamics and check parameter size and values
+if prm_dyn == ee.enum.battery.prm_dyn.rc1 || ...
+        prm_dyn == ee.enum.battery.prm_dyn.rc2 || ...
+        prm_dyn == ee.enum.battery.prm_dyn.rc3 || ...
+        prm_dyn == ee.enum.battery.prm_dyn.rc4 || ...
+        prm_dyn == ee.enum.battery.prm_dyn.rc5
+    equations
+        assert(all(R1_mat(:)>0));
+        assert(all(tau1_mat(:)>0));
+        % Parameters R1 and TAU1 must be defined at all SOC and Temperature points
+        assert(all(size(R1_mat) == [length(LUTpointsSOC) length(LUTpointsTemp)]));
+        assert(all(size(tau1_mat) == [length(LUTpointsSOC) length(LUTpointsTemp)]));
+    end
+end
+% Check for cell dynamics and check parameter size and values
+if prm_dyn == ee.enum.battery.prm_dyn.rc2 || ...
+        prm_dyn == ee.enum.battery.prm_dyn.rc3 || ...
+        prm_dyn == ee.enum.battery.prm_dyn.rc4 || ...
+        prm_dyn == ee.enum.battery.prm_dyn.rc5
+    equations
+        assert(all(R2_mat(:)>0));
+        assert(all(tau2_mat(:)>0));
+        % Parameters R2 and TAU2 must be defined at all SOC and Temperature points
+        assert(all(size(R2_mat) == [length(LUTpointsSOC) length(LUTpointsTemp)]));
+        assert(all(size(tau2_mat) == [length(LUTpointsSOC) length(LUTpointsTemp)]));
+    end
+end
+% Check for cell dynamics and check parameter size and values
+if prm_dyn == ee.enum.battery.prm_dyn.rc3 || ...
+        prm_dyn == ee.enum.battery.prm_dyn.rc4 || ...
+        prm_dyn == ee.enum.battery.prm_dyn.rc5
+    equations
+        assert(all(R3_mat(:)>0));
+        assert(all(tau3_mat(:)>0));
+        % Parameters R3 and TAU3 must be defined at all SOC and Temperature points
+        assert(all(size(R3_mat) == [length(LUTpointsSOC) length(LUTpointsTemp)]));
+        assert(all(size(tau3_mat) == [length(LUTpointsSOC) length(LUTpointsTemp)]));
+    end
+end
+% Check for cell dynamics and check parameter size and values
+if prm_dyn == ee.enum.battery.prm_dyn.rc4 || ...
+        prm_dyn == ee.enum.battery.prm_dyn.rc5
+    equations
+        assert(all(R4_mat(:)>0));
+        assert(all(tau4_mat(:)>0));
+        % Parameters R4 and TAU4 must be defined at all SOC and Temperature points
+        assert(all(size(R4_mat) == [length(LUTpointsSOC) length(LUTpointsTemp)]));
+        assert(all(size(tau4_mat) == [length(LUTpointsSOC) length(LUTpointsTemp)]));
+    end
+end
+% Check for cell dynamics and check parameter size and values
+if prm_dyn == ee.enum.battery.prm_dyn.rc5
+    equations
+        assert(all(R5_mat(:)>0));
+        assert(all(tau5_mat(:)>0));
+        % Parameters R5 and TAU5 must be defined at all SOC and Temperature points
+        assert(all(size(R5_mat) == [length(LUTpointsSOC) length(LUTpointsTemp)]));
+        assert(all(size(tau5_mat) == [length(LUTpointsSOC) length(LUTpointsTemp)]));
+    end
+end
+
+% Check for Cell fade model definition
+if prm_fade == ee.enum.battery.prm_fade.tableN
+    annotations
+        [N0,dV0,dR0,dAH,dRleak,dR1,dR2,dR3,dR4,dR5, ...
+            Tfadevec,dV0mat,dR0mat,dAHmat,dRleakmat, ...
+            dR1mat,dR2mat,dR3mat,dR4mat,dR5mat] : ExternalAccess=none;
+    end
+    
+    if prm_leak == ee.enum.battery.prm_leak.disabled
+        annotations
+            dRleakvec : ExternalAccess=none;
+        end
+    else
+        equations
+            assert(length(N0vec) == length(dRleakvec));
+        end
+    end
+    
+    if prm_dyn == ee.enum.battery.prm_dyn.rc1
+        annotations
+            [dR2vec,dR3vec,dR4vec,dR5vec] : ExternalAccess=none;
+        end
+        
+        equations
+            assert(length(N0vec) == length(dR1vec));
+        end
+    elseif prm_dyn == ee.enum.battery.prm_dyn.rc2
+        annotations
+            [dR3vec,dR4vec,dR5vec] : ExternalAccess=none;
+        end
+        
+        equations
+            assert(length(N0vec) == length(dR1vec));
+            assert(length(N0vec) == length(dR2vec));
+        end
+    elseif prm_dyn == ee.enum.battery.prm_dyn.rc3
+        annotations
+            [dR4vec,dR5vec] : ExternalAccess=none;
+        end
+        
+        equations
+            assert(length(N0vec) == length(dR1vec));
+            assert(length(N0vec) == length(dR2vec));
+            assert(length(N0vec) == length(dR3vec));
+        end
+    elseif prm_dyn == ee.enum.battery.prm_dyn.rc4
+        annotations
+            [dR5vec] : ExternalAccess=none;
+        end
+        
+        equations
+            assert(length(N0vec) == length(dR1vec));
+            assert(length(N0vec) == length(dR2vec));
+            assert(length(N0vec) == length(dR3vec));
+            assert(length(N0vec) == length(dR4vec));
+        end
+    elseif prm_dyn == ee.enum.battery.prm_dyn.rc5
+        equations
+            assert(length(N0vec) == length(dR1vec));
+            assert(length(N0vec) == length(dR2vec));
+            assert(length(N0vec) == length(dR3vec));
+            assert(length(N0vec) == length(dR4vec));
+            assert(length(N0vec) == length(dR5vec));
+        end
+    else
+        annotations
+            [dR1vec,dR2vec,dR3vec,dR4vec,dR5vec] : ExternalAccess=none;
+        end
+    end
+    
+    equations
+        assert(all(N0vec>=1));
+        assert(length(N0vec) == length(dV0vec));
+        assert(length(N0vec) == length(dR0vec));
+        assert(length(N0vec) == length(dAHvec));
+    end
+elseif prm_fade == ee.enum.battery.prm_fade.tableNandT
+    annotations
+        [N0,dV0,dR0,dAH,dRleak,dR1,dR2,dR3,dR4,dR5, ...
+            dV0vec,dR0vec,dAHvec,dRleakvec, ...
+            dR1vec,dR2vec,dR3vec,dR4vec,dR5vec] : ExternalAccess=none;
+    end
+    
+    if prm_leak == ee.enum.battery.prm_leak.disabled
+        annotations
+            dRleakmat : ExternalAccess=none;
+        end
+    else
+        equations
+            assert(all(size(dRleakmat) == [length(N0vec) length(Tfadevec)]));
+        end
+    end
+    
+    if prm_dyn == ee.enum.battery.prm_dyn.rc1
+        annotations
+            [dR2mat,dR3mat,dR4mat,dR5mat] : ExternalAccess=none;
+        end
+        
+        equations
+            assert(all(size(dR1mat) == [length(N0vec) length(Tfadevec)]));
+        end
+    elseif prm_dyn == ee.enum.battery.prm_dyn.rc2
+        annotations
+            [dR3mat,dR4mat,dR5mat] : ExternalAccess=none;
+        end
+        
+        equations
+            assert(all(size(dR1mat) == [length(N0vec) length(Tfadevec)]));
+            assert(all(size(dR2mat) == [length(N0vec) length(Tfadevec)]));
+        end
+    elseif prm_dyn == ee.enum.battery.prm_dyn.rc3
+        annotations
+            [dR4mat,dR5mat] : ExternalAccess=none;
+        end
+        
+        equations
+            assert(all(size(dR1mat) == [length(N0vec) length(Tfadevec)]));
+            assert(all(size(dR2mat) == [length(N0vec) length(Tfadevec)]));
+            assert(all(size(dR3mat) == [length(N0vec) length(Tfadevec)]));
+        end
+    elseif prm_dyn == ee.enum.battery.prm_dyn.rc4
+        annotations
+            [dR5mat] : ExternalAccess=none;
+        end
+        
+        equations
+            assert(all(size(dR1mat) == [length(N0vec) length(Tfadevec)]));
+            assert(all(size(dR2mat) == [length(N0vec) length(Tfadevec)]));
+            assert(all(size(dR3mat) == [length(N0vec) length(Tfadevec)]));
+            assert(all(size(dR4mat) == [length(N0vec) length(Tfadevec)]));
+        end
+    elseif prm_dyn == ee.enum.battery.prm_dyn.rc5
+        equations
+            assert(all(size(dR1mat) == [length(N0vec) length(Tfadevec)]));
+            assert(all(size(dR2mat) == [length(N0vec) length(Tfadevec)]));
+            assert(all(size(dR3mat) == [length(N0vec) length(Tfadevec)]));
+            assert(all(size(dR4mat) == [length(N0vec) length(Tfadevec)]));
+            assert(all(size(dR5mat) == [length(N0vec) length(Tfadevec)]));
+        end
+    else
+        annotations
+            [dR1mat,dR2mat,dR3mat,dR4mat,dR5mat] : ExternalAccess=none;
+        end
+    end
+    
+    equations
+        assert(all(N0vec>=1));
+        assert(all(Tfadevec>{0,'K'}));
+        assert(all(size(dV0mat) == [length(N0vec) length(Tfadevec)]));
+        assert(all(size(dR0mat) == [length(N0vec) length(Tfadevec)]));
+        assert(all(size(dAHmat) == [length(N0vec) length(Tfadevec)]));
+    end
+else
+    annotations
+        [N0vec,Tfadevec,dV0vec,dR0vec,dAHvec,dRleakvec, ...
+            dR1vec,dR2vec,dR3vec,dR4vec,dR5vec, ...
+            dV0mat,dR0mat,dAHmat,dRleakmat, ...
+            dR1mat,dR2mat,dR3mat,dR4mat,dR5mat] : ExternalAccess=none;
+    end
+    
+    if prm_leak == ee.enum.battery.prm_leak.disabled
+        annotations
+            dRleak : ExternalAccess=none;
+        end
+    end
+    
+    if prm_dyn == ee.enum.battery.prm_dyn.rc1
+        annotations
+            [dR2,dR3,dR4,dR5] : ExternalAccess=none;
+        end
+    elseif prm_dyn == ee.enum.battery.prm_dyn.rc2
+        annotations
+            [dR3,dR4,dR5] : ExternalAccess=none;
+        end
+    elseif prm_dyn == ee.enum.battery.prm_dyn.rc3
+        annotations
+            [dR4,dR5] : ExternalAccess=none;
+        end
+    elseif prm_dyn == ee.enum.battery.prm_dyn.rc4
+        annotations
+            dR5 : ExternalAccess=none;
+        end
+    elseif prm_dyn == ee.enum.battery.prm_dyn.rc5
+        % do nothing
+    else
+        annotations
+            [dR1,dR2,dR3,dR4,dR5] : ExternalAccess=none;
+        end
+    end
+    
+    equations
+        assert(N0>=1);
+    end
+end
+
+% Check for cell type and relevant input (Cell Pouch, Can, Cylindrical)
+if(cellTypeSelection == batteryModule.batteryTypeSelection.Pouch || ...
+        cellTypeSelection == batteryModule.batteryTypeSelection.Can)
+    % Rectangular shaped cell selected
+    annotations
+        [cellDiameter,cellCylinLine] : ExternalAccess=none;
+    end
+    parameters(Access=private)
+        cell_type = 1 ;
+    end
+    % All parameters must be greater than zero
+    equations
+        assert(cellWidth > 0, 'Cell width must be a positive number');
+        assert(cellHeight > 0, 'Cell height must be a positive number');
+        assert(cellThickness > 0, 'Cell thickness must be a positive number');
+    end
+else % 
+    % Cylindrical shaped cell selected
+    annotations
+        [cellWidth,cellThickness] : ExternalAccess=none;
+    end
+    parameters(Access=private)
+        cell_type = 2 ;
+    end  
+    % All parameters must be greater than zero
+    equations
+        assert(cellHeight > 0, 'Cell height must be a positive number');
+        assert(cellDiameter > 0, 'Cell diameter must be a positive number');
+        assert(cellCylinLine > Np && cellCylinLine < Ns*Np,'Number of cells in a line must be positive and less than number of total cells');
+    end
+end
+
+% Check dimension or size of all vector parameters
+equations
+    assert(all(moduleCellR0PercentVar>0),'Cell terminal resistance variation vector must be greater than zero');    
+    assert(all(moduleCellAHpercentVar>0),'Cell capacity percent variation vector must be greater than zero');
+    assert(all(outputCellSOC>=0) && all(outputCellSOC<=1),'Value of cell SOC must be greater than zero and less than one at all times');
+    % Num of cells in series and parallel must be equal to or greater than one
+    assert(mod(Ns*Np, 1) == 0 && Ns*Np > 1 && Ns>0 && Np>0, 'Number of series or parallel connected cells must be a positive integer');
+    % The coolant heat removal rate must be defined at all Temperature, Flowrate points for all cells
+    assert(size(moduleCooling0,3) == Ns*Np,'The third dimension of the 3D array for module cooling must be equal to total number of cells in the module');
+    assert(size(moduleCooling0,2) == length(flowrate0),'The second dimension of the 3D array for module cooling must be equal to the length of the coolant flow rate vector');
+    assert(size(moduleCooling0,1) == length(LUTpointsTemp),'The first dimension of the 3D array for module cooling must be equal to the length of the temperature vector');
+    % Check for size of SOC and Temperature vectors
+    assert(length(cellSOC0) == Ns*Np,'Cell initial SOC vector size must be equal to the total number of cells in the module');
+    assert(length(cellTemp0) == Ns*Np,'Cell initial temperature vector size must be equal to the total number of cells in the module');
+    % Cell thermal mass, thermal conductivity, heat transfer coeff must be greater than zero
+    assert(cellThermalCond > 0, 'Cell thermal conductivity must be a positive number');
+    assert(cellHeatTrCoeff > 0, 'Heat transfer coefficient must be a positive number');
+    assert(cellThermalMass > 0, 'Cell thermal mass must be a positive number');
+    % Module additional resistance must be greater than or equal to zero
+    assert(moduleExternalR >= 0, 'Additional lumped resistance must be greater than or equal to zero');
+    % Module external heat vector size check
+    assert(all(moduleExtHeat>=0) && length(moduleExtHeat) == Ns*Np,'Module external heat input vector size must equal the total number of cells and all values must be equal or greater than zero');
+end
+
+% Add lumped resistance in module for all cell tabs, cables, busbar & welds
+components(ExternalAccess=none)
+    Resistor = foundation.electrical.elements.resistor(R=moduleExternalR);
+end
+
+%
+if modelComplexity==batteryModule.batteryAbstractionLevel.Detailed
+    % modelComplexity==batteryModule.batteryAbstractionLevel.detailed
+    % -------------------------------------------------------------------
+    equations
+    	% Record output
+        outputCellTemp == [battery_thermal.temperature];
+        outputCellSOC  == [battery_thermal.stateOfCharge];
+    end
+    % Loop over number of cells and create array of components for Cell Model 
+    % and the relevant heat transfer
+    if prm_leak == ee.enum.battery.prm_leak.disabled
+        for i=1:Ns*Np
+            components(ExternalAccess=none)
+               battery_thermal(i) = ee.sources.table_battery_thermal_instrumented(...
+                    SOC_vec=LUTpointsSOC,T_dependence=T_dependence,T_vec=LUTpointsTemp,...
+                    prm_dir=prm_dir,V0_mat=V0_mat,...
+                    R0_mat=R0_mat*moduleCellR0PercentVar(i),...
+                    R0_dis_mat=R0_dis_mat*moduleCellR0PercentVar(i),R0_ch_mat=R0_ch_mat*moduleCellR0PercentVar(i),...
+                    AH_vec=cellAHvector*moduleCellAHpercentVar(i),...
+                    prm_leak=prm_leak,Rleak_vec=Rleak_vec,...
+                    extrapolation_option=extrapolation_option,...
+                    prm_dyn=prm_dyn,R1_mat=R1_mat,tau1_mat=tau1_mat,R2_mat=R2_mat,tau2_mat=tau2_mat,...
+                    R3_mat=R3_mat,tau3_mat=tau3_mat,R4_mat=R4_mat,tau4_mat=tau4_mat,...
+                    R5_mat=R5_mat,tau5_mat=tau5_mat,...
+                    prm_fade=prm_fade,N0=N0,dV0=dV0,dR0=dR0,dAH=dAH,dRleak=dRleak,...
+                    dR1=dR1,dR2=dR2,dR3=dR3,dR4=dR4,dR5=dR5,N0vec=N0vec,...
+                    Tfadevec=Tfadevec,dV0vec=dV0vec,dR0vec=dR0vec,dAHvec=dAHvec,...
+                    dRleakvec=dRleakvec,dR1vec=dR1vec,dR2vec=dR2vec,dR3vec=dR3vec,...
+                    dR4vec=dR4vec,dR5vec=dR5vec,dV0mat=dV0mat,dR0mat=dR0mat,...
+                    dAHmat=dAHmat,dRleakmat=dRleakmat,dR1mat=dR1mat,dR2mat=dR2mat,...
+                    dR3mat=dR3mat,dR4mat=dR4mat,dR5mat=dR5mat,thermal_mass=cellThermalMass,...
+                    stateOfCharge={value=cellSOC0(i),priority=priority.high} ,...
+                    temperature={value=cellTemp0(i),priority=priority.high});
+            end
+        end
+    else
+         for i=1:Ns*Np
+            components(ExternalAccess=observe)
+            	battery_thermal(i) = ee.sources.table_battery_thermal_instrumented(...
+                    SOC_vec=LUTpointsSOC,T_dependence=T_dependence,T_vec=LUTpointsTemp,...
+                    prm_dir=prm_dir,V0_mat=V0_mat,...
+                    R0_mat=R0_mat*moduleCellR0PercentVar(i),...
+                    R0_dis_mat=R0_dis_mat*moduleCellR0PercentVar(i),R0_ch_mat=R0_ch_mat*moduleCellR0PercentVar(i),...
+                    AH_vec=cellAHvector*moduleCellAHpercentVar(i),...
+                    prm_leak=prm_leak,Rleak_vec=Rleak_vec*moduleCellLeakPercentVar(i),...
+                    extrapolation_option=extrapolation_option,...
+                    prm_dyn=prm_dyn,R1_mat=R1_mat,tau1_mat=tau1_mat,R2_mat=R2_mat,tau2_mat=tau2_mat,...
+                    R3_mat=R3_mat,tau3_mat=tau3_mat,R4_mat=R4_mat,tau4_mat=tau4_mat,...
+                    R5_mat=R5_mat,tau5_mat=tau5_mat,...
+                    prm_fade=prm_fade,N0=N0,dV0=dV0,dR0=dR0,dAH=dAH,dRleak=dRleak,...
+                    dR1=dR1,dR2=dR2,dR3=dR3,dR4=dR4,dR5=dR5,N0vec=N0vec,...
+                    Tfadevec=Tfadevec,dV0vec=dV0vec,dR0vec=dR0vec,dAHvec=dAHvec,...
+                    dRleakvec=dRleakvec,dR1vec=dR1vec,dR2vec=dR2vec,dR3vec=dR3vec,...
+                    dR4vec=dR4vec,dR5vec=dR5vec,dV0mat=dV0mat,dR0mat=dR0mat,...
+                    dAHmat=dAHmat,dRleakmat=dRleakmat,dR1mat=dR1mat,dR2mat=dR2mat,...
+                    dR3mat=dR3mat,dR4mat=dR4mat,dR5mat=dR5mat,thermal_mass=cellThermalMass,...
+                    stateOfCharge={value=cellSOC0(i),priority=priority.high} ,...
+                    temperature={value=cellTemp0(i),priority=priority.high});
+            end
+        end       
+    end
+    for i =1:Ns*Np
+        components(ExternalAccess=none)
+            % Cell heat loss to ambient (convective)
+            convection(i) = foundation.thermal.elements.convection(area=(if cell_type==1,...
+                2*(cellHeight+cellWidth)*cellThickness;else pi*cellDiameter*cellHeight;...
+                end),heat_tr_coeff=cellHeatTrCoeff);
+            % Cell heat loss to coolant
+            convection_coldPlate(i)=batteryModule.batteryCellHeatConvection...
+                (Tvec=LUTpointsTemp,Fvec=flowrate0,Ncell=Ns*Np,...
+                heatTransferRate=moduleCooling0,Tcell=cellTemp0(i),icell=i)
+        end
+        % Connections to define cell heat loss to cooling system
+        connections
+            connect(battery_thermal(i).H,convection_coldPlate(i).A);
+            connect(convection_coldPlate(i).B,H);
+            connect(frac,convection_coldPlate(i).frac);
+            connect(delT,convection_coldPlate(i).delT);
+        end
+        %
+        % Connections to define convective heat loss from cell to ambient
+        connections
+            connect(battery_thermal(i).H,convection(i).B);
+            connect(H,convection(i).A);
+        end    
+    end
+
+    % Electrical Connections within Array
+    for i=1:Ns*Np-Np
+        % Looping over 1 to (Ns*Np - Np) & NOT 1 to (Ns*Np - 1) as formula used below is NOT valid for last Np parallel strings
+        connections
+            connect(battery_thermal(i-mod(i-1,Np)+Np).p,battery_thermal(i).n); % -ve cell-tabs of parallel strings connected as a result of this and pack series connection established
+            connect(battery_thermal(i-mod(i-1,Np)).p,battery_thermal(i).p); % +ve cell-tabs of parallel strings connected
+        end
+    end
+
+    % End Electrical Connections
+    for i=1:Np
+        connections
+            % End Connections
+            connect(battery_thermal(i).p,Resistor.n); % all parallel +ve cell-tabs connencted to LUMPED Resistor -ve
+            connect(battery_thermal((Ns-1)*Np+i).n,n); % all parallel -ve cell-tabs connected to EXT -ve
+            % Last group of parallel strings
+            % Recall Above : Looping over 1 to (Ns*Np - Np) & NOT 1 to (Ns*Np - 1) as formula used below is NOT valid for last Np parallel strings
+            connect(battery_thermal((Ns-1)*Np+i).p,battery_thermal((Ns-1)*Np+1).p); % +ve cell-tabs of parallel strings connected
+        end
+    end
+    connections
+        connect(p,Resistor.p); % Connecting lumped Resistor to EXT +ve
+    end
+
+    % Conductive heat transfer between cells
+    if(cellTypeSelection == batteryModule.batteryTypeSelection.Pouch || ...
+            cellTypeSelection == batteryModule.batteryTypeSelection.Can)
+        for i=1:Ns*Np-1
+            components(ExternalAccess=none)
+                conduction(i) = foundation.thermal.elements.conduction(area=...
+                    cellHeight*cellWidth,th_cond=cellThermalCond,thickness=cellThickness);
+            end
+            connections
+                connect(battery_thermal(i).H,conduction(i).A);
+                connect(battery_thermal(i+1).H,conduction(i).B);
+            end
+        end
+    elseif(cellTypeSelection == batteryModule.batteryTypeSelection.CompactCylindrical)
+        % [s=cellCylinLine]
+        % COMPACT CONNECTION
+        % connect i-th cell to (i+1)
+        %                      MIN(Ns*Np,i+2*s-MOD(i,s)*2)
+        %                      MIN(Ns*Np,i+2*s-MOD(i,s)*2+1)
+        for i=1:Ns*Np-1
+            components(ExternalAccess=none)
+                % from i to i+1
+                conduction1(i) = foundation.thermal.elements.conduction(area=...
+                    cellHeight*minLength,th_cond=cellThermalCond,thickness=cellDiameter/2);
+                % from i to MIN(Ns*Np,i+2*s-MOD(i,s)*2)
+                conduction2(i) = foundation.thermal.elements.conduction(area=...
+                    cellHeight*minLength,th_cond=...
+                    (if i+2*cellCylinLine-mod(i,cellCylinLine)*2>Ns*Np,...
+                        minThermalK; else cellThermalCond; end),thickness=cellDiameter/2);
+                % from i to MIN(Ns*Np,i+2*s-MOD(i,s)*2+1) 
+                conduction3(i) = foundation.thermal.elements.conduction(area=...
+                    cellHeight*minLength,th_cond=...
+                    (if i+2*cellCylinLine-mod(i,cellCylinLine)*2+1>Ns*Np,...
+                        minThermalK; else cellThermalCond; end),thickness=cellDiameter/2);
+            end
+            connections
+                connect(battery_thermal(i).H,conduction1(i).A);
+                connect(battery_thermal(i+1).H,conduction1(i).B);
+                connect(battery_thermal(i).H,conduction2(i).A);
+                connect(battery_thermal(min(Ns*Np,i+2*cellCylinLine-mod(i,cellCylinLine)*2)).H,conduction2(i).B);
+                connect(battery_thermal(i).H,conduction3(i).A);
+                connect(battery_thermal(min(Ns*Np,i+2*cellCylinLine-mod(i,cellCylinLine)*2+1)).H,conduction3(i).B);
+            end
+        end
+    else
+        % [s=cellCylinLine]
+        % REGULAR CONNECTION
+        % connect i-th cell to (i+1)
+        %                      MIN(Ns*Np,i+2*s-MOD(i,s)*2+1)
+        for i=1:Ns*Np-1
+            components(ExternalAccess=none)
+                % from i to i+1
+                conduction1(i) = foundation.thermal.elements.conduction(area=...
+                    cellHeight*minLength,th_cond=cellThermalCond,thickness=cellDiameter/2);
+                % from i to MIN(Ns*Np,i+2*s-MOD(i,s)*2+1) 
+                conduction2(i) = foundation.thermal.elements.conduction(area=...
+                    cellHeight*minLength,th_cond=...
+                    (if i+2*cellCylinLine-mod(i,cellCylinLine)*2+1>Ns*Np,...
+                        minThermalK; else cellThermalCond; end),thickness=cellDiameter/2);
+            end
+            connections
+                connect(battery_thermal(i).H,conduction1(i).A);
+                connect(battery_thermal(i+1).H,conduction1(i).B);
+                connect(battery_thermal(i).H,conduction2(i).A);
+                connect(battery_thermal(min(Ns*Np,i+2*cellCylinLine-mod(i,cellCylinLine)*2+1)).H,conduction2(i).B);
+            end
+        end
+    end
+
+    % External heat load
+    for i=1:Ns*Np
+        components(ExternalAccess=none)
+            extHeatLoad(i)=foundation.thermal.sources.heat_flow(heat_flow=moduleExtHeat(i));
+        end
+        connections
+            connect(extHeatLoad(i).A,H);
+            connect(battery_thermal(i).H,extHeatLoad(i).B);
+        end
+    end
+
+    % Cell balancing
+    if moduleCellBalancing == batteryModule.batteryCellBalancing.Passive
+        % Attach resistor and switch for all series strings
+        for i=1:Ns
+            components(ExternalAccess=none)
+                balancingSwitch(i)=foundation.electrical.elements.controlled_switch(...
+                        R_closed=passiveSWclosedR,G_open=passiveSWopenCond,...
+                        Threshold=passiveSWthreshold);
+                balancingResistor(i)=foundation.electrical.elements.resistor(R=passiveShuntR);
+            end
+            connections
+                connect(battery_thermal((i-1)*Np+1).p,balancingResistor(i).p);
+                connect(balancingResistor(i).n,balancingSwitch(i).p);
+                connect(balancingSwitch(i).n,battery_thermal((i-1)*Np+1).n);
+                connect(passiveSWonOff(i),balancingSwitch(i).vT);
+            end        
+        end
+    else
+        % No cell balancing
+    end
+     %
+else
+    % modelComplexity=batteryModule.batteryAbstractionLevel.Lumped
+    % ----------------------------------------------------------------
+    equations
+    	% Record output
+        outputCellTemp == [battery_thermal_lumped.temperature];
+        outputCellSOC  == [battery_thermal_lumped.stateOfCharge];
+    end
+    %
+    components(ExternalAccess=observe)
+        battery_thermal_lumped = ee.sources.table_battery_thermal_instrumented(...
+            SOC_vec=LUTpointsSOC,T_dependence=T_dependence,T_vec=LUTpointsTemp,...
+            prm_dir=prm_dir,V0_mat=lumped_V0_mat,R0_mat=lumped_R0_mat,...
+            R0_dis_mat=lumped_R0_dis_mat,R0_ch_mat=lumped_R0_ch_mat,AH_vec=lumped_cellAHvector,...
+            prm_leak=prm_leak,Rleak_vec=Rleak_vec,extrapolation_option=extrapolation_option,...
+            prm_dyn=prm_dyn,R1_mat=lumped_R1_mat,tau1_mat=tau1_mat,...
+            R2_mat=lumped_R2_mat,tau2_mat=tau2_mat,R3_mat=lumped_R3_mat,tau3_mat=tau3_mat,...
+            R4_mat=lumped_R4_mat,tau4_mat=tau4_mat,R5_mat=lumped_R5_mat,tau5_mat=tau5_mat,...
+            prm_fade=prm_fade,N0=N0,dV0=dV0,dR0=dR0,dAH=dAH,dRleak=dRleak,...
+            dR1=dR1,dR2=dR2,dR3=dR3,dR4=dR4,dR5=dR5,N0vec=N0vec,...
+            Tfadevec=Tfadevec,dV0vec=dV0vec,dR0vec=dR0vec,dAHvec=dAHvec,...
+            dRleakvec=dRleakvec,dR1vec=dR1vec,dR2vec=dR2vec,dR3vec=dR3vec,...
+            dR4vec=dR4vec,dR5vec=dR5vec,dV0mat=dV0mat,dR0mat=dR0mat,...
+            dAHmat=dAHmat,dRleakmat=dRleakmat,dR1mat=dR1mat,dR2mat=dR2mat,...
+            dR3mat=dR3mat,dR4mat=dR4mat,dR5mat=dR5mat,thermal_mass=Ns*Np*cellThermalMass,...
+            stateOfCharge={value=lumped_cellSOC0(1),priority=priority.high} ,...
+            temperature={value=lumped_cellTemp0(1),priority=priority.high});
+    end
+    components(ExternalAccess=none)
+        % Cell heat loss to ambient (convective)
+        convection_lumped=foundation.thermal.elements.convection(area=(if cell_type==1,...
+            (Ns*Np)*2*(cellHeight+cellWidth)*cellThickness;else ...
+            (Ns*Np)*pi*cellDiameter*cellHeight;end),...
+            heat_tr_coeff=cellHeatTrCoeff);
+        % Cell heat loss to coolant
+        convection_coldPlate_lumped=batteryModule.batteryCellHeatConvection...
+            (Tvec=LUTpointsTemp,Fvec=flowrate0,Ncell=Ns*Np,...
+            heatTransferRate=lumped_moduleCooling,Tcell=lumped_cellTemp0(1),icell=i)
+        % Very Imp : icell=1 as 'lumped_moduleCooling(:,:,1)' ONLY contains relevant data
+    end
+    % Heat loss to cold plate
+    connections
+        connect(battery_thermal_lumped.H,convection_coldPlate_lumped.A);
+        connect(convection_coldPlate_lumped.B,H);
+        connect(frac,convection_coldPlate_lumped.frac);
+        connect(delT,convection_coldPlate_lumped.delT);
+    end
+    %
+    % Convective heat loss to ambient
+    connections
+        connect(battery_thermal_lumped.H,convection_lumped.B);
+        connect(H,convection_lumped.A);
+    end
+    % Electrical connections
+    connections
+        connect(p,Resistor.p); 
+        connect(battery_thermal_lumped.p,Resistor.n); 
+        connect(battery_thermal_lumped.n,n);
+    end
+    % External heat load
+    components(ExternalAccess=none)
+        extHeatLoad_lumped=foundation.thermal.sources.heat_flow(heat_flow=sum([moduleExtHeat]));
+    end
+    connections
+        connect(extHeatLoad_lumped.A,H);
+        connect(battery_thermal_lumped.H,extHeatLoad_lumped.B);
+    end
+end
+% 
+
+end
