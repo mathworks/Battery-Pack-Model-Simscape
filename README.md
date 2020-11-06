@@ -9,13 +9,15 @@ Battery (Table-Based) Simscape Electrical block. In this example,
 the initial temperature and the state of charge are the same for
 all cells. Eight battery modules, six of one type and two of another type,
 are connected in series to simulate a battery pack. The Battery Controls
-subsystem defines the logic to determine the battery pack flowrate
+subsystem defines the logic to determine the required level of cooling
 for the applied current load.
 
 Open Battery_Pack_Thermal_Management.prj to get started.
 
 Please visit the [Simscape Electrical](https://www.mathworks.com/products/simscape-electrical.html) 
 page to learn more about modeling electrical systems.
+
+[![View Battery Pack Model in Simscape on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/82330-battery-pack-model-in-simscape)
 
 ## **Battery Pack Model For Testing Current Draw During Drive Cycle**
 ![](Overview/html/Battery_Pack_Thermal_Management_modelTopLevel.png)
