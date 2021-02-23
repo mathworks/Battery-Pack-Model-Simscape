@@ -1,22 +1,22 @@
 classdef batteryTypeSelection < int32
 % Battery type selection definition.
 %    
-% Copyright 2020 The MathWorks, Inc.
+% Copyright 2020-2021 The MathWorks, Inc.
 % 
     enumeration
-        Pouch              (1)
-        Can                (2)
-        CompactCylindrical (3)
-        RegularCylindrical (4)
+        pouch              (1)
+        can                (2)
+        compactCylindrical (3)
+        regularCylindrical (4)
     end
 
     methods(Static)
         function map = displayText()
             map = containers.Map;
-            map('Pouch') = 'Pouch';
-            map('Can') = 'Can';
-            map('CompactCylindrical') = 'Compact cylindrical';
-            map('RegularCylindrical') = 'Regular cylindrical';
+            map('pouch') = 'Pouch';
+            map('can') = 'Can';
+            map('compactCylindrical') = 'Compact cylindrical';
+            map('regularCylindrical') = 'Regular cylindrical';
         end
     end
 end

@@ -1,0 +1,344 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Electric Vehicle Thermal Management</title><meta name="generator" content="MATLAB 9.9"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2021-02-23"><meta name="DC.source" content="EV_Thermal_Management.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Electric Vehicle Thermal Management</h1><!--introduction--><p>This example models the thermal management system of a battery electric vehicle. The system consists of two coolant loops, a refrigeration loop, and a cabin HVAC loop. The thermal load are the batteries, powertrain, and cabin.</p><p>The two coolant loops can be joined together in serial mode or kept separate in parallel mode using the 4-way valve. In cold weather, the coolant loops are in serial mode so that heat from the motor warms the batteries. If necessary, a heater can provide additional heat. In warm weather, the coolant loops remain in serial mode and both the batteries and the powertrain are cooled by the radiator. In hot weather, the coolant loop switches to parallel mode and separates. One loop cools the powertrain using the radiator. The other cools the batteries using the chiller in the refrigeration loop.</p><p>The refrigeration loop consists of a compressor, a condenser, a liquid receiver, two expansion valves, a chiller, and an evaporator. The chiller is used to cool the coolant in hot weather when the radiator alone is insufficient. The evaporator is used to cool the vehicle cabin when air conditioning is turned on. The compressor is controlled such that the condenser can dissipate the heat absorbed by either or both the chiller and the evaporator.</p><p>The HVAC loop consists of a blower, an evaporator, a PTC heater, and the vehicle cabin. The PTC heater provides heating in cold weather; the evaporator provides air conditioning in hot weather. The blower is controlled to maintain the specified cabin temperature setpoint.</p><p>This model has three scenarios set up. The drive cycle scenario simulates driving conditions in 30 degC weather with air conditioning on. The vehicle speed is based on the NEDC followed by 30 min of high speed to push the battery heat load. The cool down scenario simulates a stationary vehicle in 40 degC weather with air conditioning on. Finally, the cold weather scenario simulates driving conditions in -10 degC weather, which requires the battery heater and PTC heater to warm up the batteries and cabin, respectively.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Model</a></li><li><a href="#2">Scenario Subsystem</a></li><li><a href="#3">Controls Subsystem</a></li><li><a href="#4">Parallel-Serial Mode Valve Subsystem</a></li><li><a href="#5">Motor Pump Subsystem</a></li><li><a href="#6">Charger Subsystem</a></li><li><a href="#7">Motor Subsystem</a></li><li><a href="#8">Inverter Subsystem</a></li><li><a href="#9">Radiator Subsystem</a></li><li><a href="#10">Radiator Bypass Valve Subsystem</a></li><li><a href="#11">Battery Pump Subsystem</a></li><li><a href="#12">Chiller Subsystem</a></li><li><a href="#13">Chiller Bypass Valve Subsystem</a></li><li><a href="#14">Heater Subsystem</a></li><li><a href="#15">DCDC Subsystem</a></li><li><a href="#16">Battery Subsystem</a></li><li><a href="#17">Compressor Subsystem</a></li><li><a href="#18">Condenser Subsystem</a></li><li><a href="#19">Chiller Expansion Valve Subsystem</a></li><li><a href="#20">Evaporator Expansion Valve Subsystem</a></li><li><a href="#21">Evaporator Subsystem</a></li><li><a href="#22">Blower Subsystem</a></li><li><a href="#23">Recirculation Flap Subsystem</a></li><li><a href="#24">PTC Subsystem</a></li><li><a href="#25">Cabin Subsystem</a></li><li><a href="#26">Cabin Heat Transfer Subsystem</a></li><li><a href="#27">Simulation Results from Scopes</a></li></ul></div><h2 id="1">Model</h2><img vspace="5" hspace="5" src="EV_Thermal_Management_01.png" alt=""> <h2 id="2">Scenario Subsystem</h2><p>This subsystem sets up the environment conditions and inputs to the system for the selected scenario. The battery current demand and powertrain heat load are a function of the vehicle speed based on tabulated data.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_02.png" alt=""> <h2 id="3">Controls Subsystem</h2><p>This subsystem consists of all of the controllers for the pumps, compressor, fan, blower, and valves in the thermal management system.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_03.png" alt=""> <h2 id="4">Parallel-Serial Mode Valve Subsystem</h2><p>The 4-way valve in this subsystem controls whether the coolant loop operates in parallel or serial mode. When ports A and D are connected and ports C and B are connected, it is in parallel mode. The two coolant loops are separated with their own coolant tanks and pumps.</p><p>When ports A and B are connected and ports C and D are connected, it is in serial mode. The two coolant loops are merged and the two pumps are synchronized to provide the same flow rate.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_04.png" alt=""> <h2 id="5">Motor Pump Subsystem</h2><p>This pump drives the coolant loop that cools the charger, motor, and inverter.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_05.png" alt=""> <h2 id="6">Charger Subsystem</h2><p>This subsystem models a coolant jacket around the charger, which is represented by a heat flow rate source and a thermal mass.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_06.png" alt=""> <h2 id="7">Motor Subsystem</h2><p>This subsystem models a coolant jacket around the motor, which is represented by a heat flow rate source and a thermal mass.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_07.png" alt=""> <h2 id="8">Inverter Subsystem</h2><p>This subsystem models a coolant jacket around the inverter, which is represented by a heat flow rate source and a thermal mass.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_08.png" alt=""> <h2 id="9">Radiator Subsystem</h2><p>The radiator is a rectangular tube-and-fin type heat exchanger that dissipates coolant heat to the air. The air flow is driven by the vehicle speed and the fan located behind the condenser.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_09.png" alt=""> <h2 id="10">Radiator Bypass Valve Subsystem</h2><p>In cold weather, the radiator is bypassed so that heat from the powertrain can be used to warm up the batteries. This is controlled by the the 3-way valve that either sends coolant to the radiator or bypasses the radiator.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_10.png" alt=""> <h2 id="11">Battery Pump Subsystem</h2><p>This pump drives the coolant loop that cools the batteries and the DC-DC converter.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_11.png" alt=""> <h2 id="12">Chiller Subsystem</h2><p>The chiller is assumed to be a shell-and-tube type heat exchanger that lets the refrigerant absorb heat from the coolant.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_12.png" alt=""> <h2 id="13">Chiller Bypass Valve Subsystem</h2><p>The chiller operates in an on-off manner depending on the battery temperature. This is controlled by the the 3-way valve that either sends coolant to the chiller or bypasses the chiller.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_13.png" alt=""> <h2 id="14">Heater Subsystem</h2><p>The battery heater is modeled as a heat flow rate source and a thermal mass. It is turned on in cold weather to bring the battery temperature above 5 degC.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_14.png" alt=""> <h2 id="15">DCDC Subsystem</h2><p>This subsystem models a coolant jacket around the DC-DC converter, which is represented by a heat flow rate source and a thermal mass.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_15.png" alt=""> <h2 id="16">Battery Subsystem</h2><p>The Battery subsystem is made up of four series connected Battery Modules. All modules are of the same type and size, with each module consisting of 2-parallel <tt>Pouch</tt> type cells per series of 20 such strings. All modules have same type of <tt>Pouch</tt> cells with the total number of cells in the Battery being equal to 160 (4 modules of 20X2 cells). The 160 cells in the Battery differ in their capacity rating. The cell-to-cell variation in cell capacity is defined using parameter <b>Cell Ahr rating variation</b>. The workspace variables <tt>battery_moduleCellAhr_ini01</tt>, <tt>battery_moduleCellAhr_ini02</tt>, <tt>battery_moduleCellAhr_ini03</tt> and <tt>battery_moduleCellAhr_ini04</tt> define cell capacity values for the four modules, defined initialization file <tt>EV_Thermal_Management_param.m</tt>. Each battery module is cooled using its own coolant plate, specified as a pipe element. The coolant inlet temperature to all modules is the same.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_16.png" alt=""> <h2 id="17">Compressor Subsystem</h2><p>The compressor drives the flow in the refrigerant loop. It is controlled to maintain a pressure of 0.3 MPa in the chiller and the evaporator, which corresponds to a saturation temperature of around 1 degC.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_17.png" alt=""> <h2 id="18">Condenser Subsystem</h2><p>The condenser is a rectangular tube-and-fin type heat exchanger that dissipates refrigerant heat to the air. The air flow is driven by the vehicle speed and the fan. The liquid receiver provides storage for the refrigerant and permits only subcooled liquid to flow into the expansion valves.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_18.png" alt=""> <h2 id="19">Chiller Expansion Valve Subsystem</h2><p>This expansion valve meters refrigerant flow to the chiller to maintain a nominal superheat.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_19.png" alt=""> <h2 id="20">Evaporator Expansion Valve Subsystem</h2><p>This expansion valve meters refrigerant flow to the evaporator to maintain a nominal superheat.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_20.png" alt=""> <h2 id="21">Evaporator Subsystem</h2><p>The evaporator is a rectangular tube-and-fin type heat exchanger that lets the refrigerant absorb heat from the air. It also dehumidifies the air when the air is humid.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_21.png" alt=""> <h2 id="22">Blower Subsystem</h2><p>The blower drives the air flow in the HVAC loop. It is controlled to maintain the cabin temperature setpoint. The source of air can come from the environment or from recirculated cabin air.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_22.png" alt=""> <h2 id="23">Recirculation Flap Subsystem</h2><p>The recirculation flap is modeled as two restrictions operating in the opposite manner to let either environment air or cabin air to the blower.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_23.png" alt=""> <h2 id="24">PTC Subsystem</h2><p>The PTC heater is modeled as a heat flow rate source and a thermal mass. It is turned on in cold weather to provide heating to the vehicle cabin.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_24.png" alt=""> <h2 id="25">Cabin Subsystem</h2><p>The vehicle cabin is modeled as a large volume of moist air. Each occupant in the vehicle is a source of heat, moisture, and CO2.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_25.png" alt=""> <h2 id="26">Cabin Heat Transfer Subsystem</h2><p>This subsystem models the thermal resistances between the cabin interior and the external environment.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_26.png" alt=""> <h2 id="27">Simulation Results from Scopes</h2><p>The following scope shows the vehicle speed, heat dissipation, cabin temperature, component temperatures, and control commands for the drive cycle scenario. At the beginning, the coolant loop is in serial mode. After about 1100 s, it switches to parallel mode and the chiller is used to keep the batteries below 35 degC.</p><img vspace="5" hspace="5" src="EV_Thermal_Management_27.png" alt=""> <p class="footer">Copyright 2020-2021 The MathWorks, Inc.<br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2020b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Electric Vehicle Thermal Management
+%
+% This example models the thermal management system of a battery electric
+% vehicle. The system consists of two coolant loops, a refrigeration loop,
+% and a cabin HVAC loop. The thermal load are the batteries, powertrain,
+% and cabin.
+%
+% The two coolant loops can be joined together in serial mode or kept
+% separate in parallel mode using the 4-way valve. In cold weather, the
+% coolant loops are in serial mode so that heat from the motor warms the
+% batteries. If necessary, a heater can provide additional heat. In warm
+% weather, the coolant loops remain in serial mode and both the batteries
+% and the powertrain are cooled by the radiator. In hot weather, the
+% coolant loop switches to parallel mode and separates. One loop cools the
+% powertrain using the radiator. The other cools the batteries using the
+% chiller in the refrigeration loop.
+%
+% The refrigeration loop consists of a compressor, a condenser, a liquid
+% receiver, two expansion valves, a chiller, and an evaporator. The chiller
+% is used to cool the coolant in hot weather when the radiator alone is
+% insufficient. The evaporator is used to cool the vehicle cabin when air
+% conditioning is turned on. The compressor is controlled such that the
+% condenser can dissipate the heat absorbed by either or both the chiller
+% and the evaporator.
+%
+% The HVAC loop consists of a blower, an evaporator, a PTC heater, and the
+% vehicle cabin. The PTC heater provides heating in cold weather; the
+% evaporator provides air conditioning in hot weather. The blower is
+% controlled to maintain the specified cabin temperature setpoint.
+%
+% This model has three scenarios set up. The drive cycle scenario simulates
+% driving conditions in 30 degC weather with air conditioning on. The
+% vehicle speed is based on the NEDC followed by 30 min of high speed to
+% push the battery heat load. The cool down scenario simulates a stationary
+% vehicle in 40 degC weather with air conditioning on. Finally, the cold
+% weather scenario simulates driving conditions in -10 degC weather, which
+% requires the battery heater and PTC heater to warm up the batteries and
+% cabin, respectively.
+
+% Copyright 2020-2021 The MathWorks, Inc.
+
+
+%% Model
+
+open_system('EV_Thermal_Management')
+
+%% Scenario Subsystem
+%
+% This subsystem sets up the environment conditions and inputs to the
+% system for the selected scenario. The battery current demand and
+% powertrain heat load are a function of the vehicle speed based on
+% tabulated data.
+
+open_system('EV_Thermal_Management/Scenario','force')
+
+%% Controls Subsystem
+%
+% This subsystem consists of all of the controllers for the pumps,
+% compressor, fan, blower, and valves in the thermal management system.
+
+open_system('EV_Thermal_Management/Controls','force')
+
+%% Parallel-Serial Mode Valve Subsystem
+%
+% The 4-way valve in this subsystem controls whether the coolant loop
+% operates in parallel or serial mode. When ports A and D are connected and
+% ports C and B are connected, it is in parallel mode. The two coolant
+% loops are separated with their own coolant tanks and pumps.
+%
+% When ports A and B are connected and ports C and D are connected, it is
+% in serial mode. The two coolant loops are merged and the two pumps are
+% synchronized to provide the same flow rate.
+
+open_system('EV_Thermal_Management/Parallel-Serial Mode Valve','force')
+
+%% Motor Pump Subsystem
+%
+% This pump drives the coolant loop that cools the charger, motor, and
+% inverter.
+
+open_system('EV_Thermal_Management/Motor Pump','force')
+
+%% Charger Subsystem
+%
+% This subsystem models a coolant jacket around the charger, which is
+% represented by a heat flow rate source and a thermal mass.
+
+open_system('EV_Thermal_Management/Charger','force')
+
+%% Motor Subsystem
+%
+% This subsystem models a coolant jacket around the motor, which is
+% represented by a heat flow rate source and a thermal mass.
+
+open_system('EV_Thermal_Management/Motor','force')
+
+%% Inverter Subsystem
+%
+% This subsystem models a coolant jacket around the inverter, which is
+% represented by a heat flow rate source and a thermal mass.
+
+open_system('EV_Thermal_Management/Inverter','force')
+
+%% Radiator Subsystem
+%
+% The radiator is a rectangular tube-and-fin type heat exchanger that
+% dissipates coolant heat to the air. The air flow is driven by the vehicle
+% speed and the fan located behind the condenser.
+
+open_system('EV_Thermal_Management/Radiator','force')
+
+%% Radiator Bypass Valve Subsystem
+%
+% In cold weather, the radiator is bypassed so that heat from the
+% powertrain can be used to warm up the batteries. This is controlled by
+% the the 3-way valve that either sends coolant to the radiator or bypasses
+% the radiator.
+
+open_system('EV_Thermal_Management/Radiator Bypass Valve','force')
+
+%% Battery Pump Subsystem
+%
+% This pump drives the coolant loop that cools the batteries and the DC-DC
+% converter.
+
+open_system('EV_Thermal_Management/Battery Pump','force')
+
+%% Chiller Subsystem
+%
+% The chiller is assumed to be a shell-and-tube type heat exchanger that
+% lets the refrigerant absorb heat from the coolant.
+
+open_system('EV_Thermal_Management/Chiller','force')
+
+%% Chiller Bypass Valve Subsystem
+%
+% The chiller operates in an on-off manner depending on the battery
+% temperature. This is controlled by the the 3-way valve that either sends
+% coolant to the chiller or bypasses the chiller.
+
+open_system('EV_Thermal_Management/Chiller Bypass Valve','force')
+
+%% Heater Subsystem
+%
+% The battery heater is modeled as a heat flow rate source and a thermal
+% mass. It is turned on in cold weather to bring the battery temperature
+% above 5 degC.
+
+open_system('EV_Thermal_Management/Heater','force')
+
+%% DCDC Subsystem
+%
+% This subsystem models a coolant jacket around the DC-DC converter, which
+% is represented by a heat flow rate source and a thermal mass.
+
+open_system('EV_Thermal_Management/DCDC','force')
+
+%% Battery Subsystem
+%
+% The Battery subsystem is made up of four series connected Battery Modules. 
+% All modules are of the same type and size, with each module consisting of 
+% 2-parallel |Pouch| type cells per series of 20 such strings. All modules 
+% have same type of |Pouch| cells with the total number of cells in the 
+% Battery being equal to 160 (4 modules of 20X2 cells). The 160 cells in
+% the Battery differ in their capacity rating. The cell-to-cell variation
+% in cell capacity is defined using parameter *Cell Ahr rating variation*.
+% The workspace variables |battery_moduleCellAhr_ini01|,
+% |battery_moduleCellAhr_ini02|, |battery_moduleCellAhr_ini03| and
+% |battery_moduleCellAhr_ini04| define cell capacity values for the four 
+% modules, defined initialization file |EV_Thermal_Management_param.m|.
+% Each battery module is cooled using its own coolant plate, specified as a
+% pipe element. The coolant inlet temperature to all modules is the same. 
+
+open_system('EV_Thermal_Management/Battery','force')
+
+%% Compressor Subsystem
+%
+% The compressor drives the flow in the refrigerant loop. It is controlled
+% to maintain a pressure of 0.3 MPa in the chiller and the evaporator,
+% which corresponds to a saturation temperature of around 1 degC.
+
+open_system('EV_Thermal_Management/Compressor','force')
+
+%% Condenser Subsystem
+%
+% The condenser is a rectangular tube-and-fin type heat exchanger that
+% dissipates refrigerant heat to the air. The air flow is driven by the
+% vehicle speed and the fan. The liquid receiver provides storage for the
+% refrigerant and permits only subcooled liquid to flow into the expansion
+% valves.
+
+open_system('EV_Thermal_Management/Condenser','force')
+
+%% Chiller Expansion Valve Subsystem
+%
+% This expansion valve meters refrigerant flow to the chiller to maintain a
+% nominal superheat.
+
+open_system('EV_Thermal_Management/Chiller Expansion Valve','force')
+
+%% Evaporator Expansion Valve Subsystem
+%
+% This expansion valve meters refrigerant flow to the evaporator to
+% maintain a nominal superheat.
+
+open_system('EV_Thermal_Management/Evaporator Expansion Valve','force')
+
+%% Evaporator Subsystem
+%
+% The evaporator is a rectangular tube-and-fin type heat exchanger that
+% lets the refrigerant absorb heat from the air. It also dehumidifies the
+% air when the air is humid.
+
+open_system('EV_Thermal_Management/Evaporator','force')
+
+%% Blower Subsystem
+%
+% The blower drives the air flow in the HVAC loop. It is controlled to
+% maintain the cabin temperature setpoint. The source of air can come from
+% the environment or from recirculated cabin air.
+
+open_system('EV_Thermal_Management/Blower','force')
+
+%% Recirculation Flap Subsystem
+%
+% The recirculation flap is modeled as two restrictions operating in the
+% opposite manner to let either environment air or cabin air to the blower.
+
+open_system('EV_Thermal_Management/Blower/Recirculation Flap','force')
+
+%% PTC Subsystem
+%
+% The PTC heater is modeled as a heat flow rate source and a thermal mass.
+% It is turned on in cold weather to provide heating to the vehicle cabin.
+
+open_system('EV_Thermal_Management/PTC','force')
+
+%% Cabin Subsystem
+%
+% The vehicle cabin is modeled as a large volume of moist air. Each
+% occupant in the vehicle is a source of heat, moisture, and CO2.
+
+open_system('EV_Thermal_Management/Cabin','force')
+
+%% Cabin Heat Transfer Subsystem
+%
+% This subsystem models the thermal resistances between the cabin interior
+% and the external environment.
+
+open_system('EV_Thermal_Management/Cabin/Cabin Heat Transfer','force')
+
+%% Simulation Results from Scopes
+%
+% The following scope shows the vehicle speed, heat dissipation, cabin
+% temperature, component temperatures, and control commands for the drive
+% cycle scenario. At the beginning, the coolant loop is in serial mode.
+% After about 1100 s, it switches to parallel mode and the chiller is used
+% to keep the batteries below 35 degC.
+
+set_param('EV_Thermal_Management/Scope','open','on');
+sim('EV_Thermal_Management');
+
+%% 
+
+set_param('EV_Thermal_Management/Scope','open','off');
+%%
+
+clear all
+close all
+bdclose all
+
+##### SOURCE END #####
+--></body></html>

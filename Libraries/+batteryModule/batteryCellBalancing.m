@@ -1,17 +1,17 @@
 classdef batteryCellBalancing < int32
 % Battery type selection definition.
     
-% Copyright 2020 The MathWorks, Inc.
+% Copyright 2020-2021 The MathWorks, Inc.
     enumeration
-        None              (1)
-        Passive           (2)
+        none              (1)
+        passive           (2)
     end
 
     methods(Static)
         function map = displayText()
             map = containers.Map;
-            map('None') = 'None';
-            map('Passive') = 'Passive';
+            map('none') = 'None';
+            map('passive') = 'Passive';
         end
     end
 end

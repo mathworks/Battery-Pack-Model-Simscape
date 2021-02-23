@@ -1,7 +1,7 @@
 %% Parameters for Lithium-Ion Battery Pack cooling example
 % Battery cooling example setup and workspace variables
 % 
-% Copyright 2020 The MathWorks, Inc.
+% Copyright 2020-2021 The MathWorks, Inc.
 % 
 ambient=300;        % Ambient temperature in K
 coolantTemp=300;    % Coolant inlet temperature in K
@@ -136,12 +136,15 @@ totalCellsInFile=max(size(sampleDistribution312));
 totalCells=Ns1*Np1+Ns2*Np2+Ns3*Np3+Ns4*Np4+Ns5*Np5+Ns6*Np6+Ns7*Np7+Ns8*Np8;
 cellCount=[Ns1*Np1, Ns2*Np2, Ns3*Np3, Ns4*Np4, Ns5*Np5, Ns6*Np6, Ns7*Np7, Ns8*Np8];
 if totalCells == totalCellsInFile
-    iniR01=sampleDistribution312(1:Ns1*Np1)';
-    iniR02=sampleDistribution312(Ns1*Np1+1:sum(cellCount(1:2)))';
-    iniR03=sampleDistribution312(sum(cellCount(1:2))+1:sum(cellCount(1:3)))';
-    iniR04=sampleDistribution312(sum(cellCount(1:3))+1:sum(cellCount(1:4)))';
-    iniR05=sampleDistribution312(sum(cellCount(1:4))+1:sum(cellCount(1:5)))';
-    iniR06=sampleDistribution312(sum(cellCount(1:5))+1:sum(cellCount(1:6)))';
-    iniR07=sampleDistribution312(sum(cellCount(1:6))+1:sum(cellCount(1:7)))';
-    iniR08=sampleDistribution312(sum(cellCount(1:7))+1:sum(cellCount(1:8)))';
+    iniR01=sort(sampleDistribution312(1:Ns1*Np1)');
+    iniR02=sort(sampleDistribution312(Ns1*Np1+1:sum(cellCount(1:2)))');
+    iniR03=sort(sampleDistribution312(sum(cellCount(1:2))+1:sum(cellCount(1:3)))');
+    iniR04=sort(sampleDistribution312(sum(cellCount(1:3))+1:sum(cellCount(1:4)))');
+    iniR05=sort(sampleDistribution312(sum(cellCount(1:4))+1:sum(cellCount(1:5)))');
+    iniR06=sort(sampleDistribution312(sum(cellCount(1:5))+1:sum(cellCount(1:6)))');
+    iniR07=sort(sampleDistribution312(sum(cellCount(1:6))+1:sum(cellCount(1:7)))');
+    iniR08=sort(sampleDistribution312(sum(cellCount(1:7))+1:sum(cellCount(1:8)))');
 end
+
+
+

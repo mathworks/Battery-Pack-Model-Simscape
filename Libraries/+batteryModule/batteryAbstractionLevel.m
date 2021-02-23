@@ -1,17 +1,19 @@
 classdef batteryAbstractionLevel < int32
 % Battery abstraction selection definition.
     
-% Copyright 2020 The MathWorks, Inc.
+% Copyright 2020-2021 The MathWorks, Inc.
     enumeration
-        Lumped        (1)
-        Detailed      (2)
+        lumped   (1)
+        grouped  (2)
+        detailed (3)
     end
 
     methods(Static)
         function map = displayText()
             map = containers.Map;
-            map('Lumped') = 'Lumped';
-            map('Detailed') = 'Detailed';
+            map('lumped') = 'Lumped';
+            map('grouped') = 'Grouped';
+            map('detailed') = 'Detailed';
         end
     end
 end

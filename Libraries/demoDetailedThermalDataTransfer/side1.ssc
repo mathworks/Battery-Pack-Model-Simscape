@@ -1,0 +1,20 @@
+component side1
+    % Copyright 2020-2021 The MathWorks, Inc.
+
+    nodes
+        a = foundation.thermal.thermal; % a:left
+    end
+    inputs
+        side1Data={zeros(2,1),'1'}; % Q : right
+    end
+    variables
+        q = {0, 'W'}
+    end
+    branches
+        q : a.Q -> *;
+    end
+    equations
+        a.T == {side1Data(1,1),'K'};
+        q   == {side1Data(2,1),'W'};
+    end
+end 
