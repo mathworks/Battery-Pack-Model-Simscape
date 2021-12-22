@@ -2,7 +2,7 @@
 Copyright 2020-2021 The MathWorks, Inc.
 
 This repository shows use of Simscape to model an electric vehicle
-battery pack. There are three examples:
+battery pack. There are five examples:
 1. Battery Pack Thermal Management
    * Shows how to model an automotive battery pack for thermal management tasks. 
 2. Full Vehicle Thermal Management
@@ -10,6 +10,13 @@ battery pack. There are three examples:
 3. Workflow from Module Design to Full Pack
    * Demonstrates a workflow to go from a detailed battery module design 
      to a real-time pack plant model
+4. Battery Management System for State of Charge estimation
+   * Shows how to use Kalman Filters (EKF) and predict battery state of charge.
+5. Battery Temperature estimation using Neural Networks
+   * Shows how to use Neural Networks to eliminate a sensor in the battery pack. 
+     Demonstrates a workflow to generate training data for neural networks, 
+     train the network, validate it and use for time-series prediciton, and 
+     code generation for hardware deployment.
 
 Open batteryExamplesProjectSetup.prj to get started up the project path. The 
 project shortcut buttons in the toolstrip open these three examples.
@@ -51,4 +58,17 @@ the module, and run battery plant simulations.
 
 ### **BEV Full-Battery Pack Plant Model**
 ![](Scripts_Data/BEV_Battery_Plant_Model_05.png)
+
+
+## **Battery Management System**
+You will learn how to use Kalman Filters to estimate battery state 
+of charge. The battery pack consists of two battery modules, 
+which are combinations of cells in series and parallel. 
+
+![](Overview/html/Battery_Management_System_01.png)
+
+
+## **Neural Network for Battery Temperature Prediction**
+You will learn how to train, validate, deploy a neural network to predict
+Battery Pack temperature.
 
