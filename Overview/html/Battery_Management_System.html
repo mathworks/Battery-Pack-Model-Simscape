@@ -1,0 +1,156 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Battery Management System</title><meta name="generator" content="MATLAB 9.9"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2021-11-23"><meta name="DC.source" content="Battery_Management_System.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Battery Management System</h1><!--introduction--><p>This example shows how to model a battery management system for the state of charge estimation. The battery pack comprises of two battery modules, which are combinations of cells in series and parallel. The <b>Battery (Table-Based)</b> Simscape Electrical&#8482; block models each battery cell. In this example, all cells have the same initial temperature and state of charge, but different resistance. The state of each cell is estimated using battery pack current and the measured cell voltages.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Model Overview</a></li><li><a href="#2">Battery Cell Overview</a></li><li><a href="#3">Build Battery Pack</a></li><li><a href="#4">Define Battery Management System</a></li><li><a href="#5">Define Battery State-of-Charge Estimation</a></li><li><a href="#6">Simulation Results</a></li></ul></div><h2 id="1">Model Overview</h2><p>This example models a battery pack connected to an auxiliary power load due to the coolant pump. The BMS subsystem defines the required amount of the coolant flowrate to cool the high voltage (HV) battery pack. A controlled current source defines the DC current demand from the HV battery pack. To calculate the state of charge for the battery pack, the BMS subsystem uses the cell voltages and temperature, and the battery pack current. The cell capacity does not change with time or cycling and is the same for all the cells.</p><pre class="codeinput">open_system(<span class="string">'Battery_Management_System'</span>)
+</pre><img vspace="5" hspace="5" src="Battery_Management_System_01.png" alt=""> <h2 id="2">Battery Cell Overview</h2><p>The battery cell is modeled using the equivalent circuit method. You can find the equivalent circuit parameters used for each cell in the <tt>Battery_Management_System_param.m</tt> initialization file . To characterize a lithium-ion cell, this example uses a 1-RC model by setting the <tt>charge dynamics</tt> parameter to <tt>One time-constant dynamics</tt>. This example does not consider cell capacity fade or charge leakage.</p><h2 id="3">Build Battery Pack</h2><p>The Battery Pack comprises of 2 series connected Battery Modules. Each module consists of 10 series connected <tt>Pouch</tt> type cells. The value of the terminal resistance, <tt>R0</tt>, in the first cell of the first module is 5% higher than the value of terminal resistance in the other cells. The value of the terminal resistance, <tt>R0</tt>, in the third cell of the second module is 3% lower than the value of <tt>R0</tt> in the other cells. The <tt>Battery_Management_System_param.m</tt> file sets this scenario by specifying <tt>iniR01(1,1)</tt> to 1.05 and <tt>iniR02(1,3)</tt> to 0.97.</p><pre class="codeinput">open_system(<span class="string">'Battery_Management_System/Battery Pack'</span>)
+</pre><img vspace="5" hspace="5" src="Battery_Management_System_02.png" alt=""> <h2 id="4">Define Battery Management System</h2><p>The BMS subsystem calculates the battery state of charge and controls the coolant flowrate. The coolant pump power loss is calculated based on the value at the <tt>FlwR</tt> input port, with 500W being the maximum pump power consumption. This example uses the extended Kalman-Filter (EKF) in the SOC estimation subsystem to calculate the state of charge.</p><pre class="codeinput">open_system(<span class="string">'Battery_Management_System/BMS'</span>)
+</pre><img vspace="5" hspace="5" src="Battery_Management_System_03.png" alt=""> <h2 id="5">Define Battery State-of-Charge Estimation</h2><p>To calculate the state of charge, the EKF uses the pack current, cell voltages, and temperature data. The SOC estimation subsystem also implements a lookup table to define the cell model. The EKF reduces the error between the prediction and measurement of the cell voltages.</p><pre class="codeinput">open_system(<span class="string">'Battery_Management_System/BMS/SOC estimation'</span>)
+</pre><img vspace="5" hspace="5" src="Battery_Management_System_04.png" alt=""> <h2 id="6">Simulation Results</h2><p>This figure shows the simulation results with the parameters defined in the <tt>Battery_Management_System_param.m</tt> file. The cell voltages are different for the cells with different resistance <tt>R0</tt>. The BMS accurately tracks the state of charge of all cells.</p><pre class="codeinput">Battery_Management_System_plot1state
+</pre><img vspace="5" hspace="5" src="Battery_Management_System_05.png" alt=""> <pre class="codeinput">close <span class="string">all</span>
+bdclose <span class="string">all</span>
+</pre><p class="footer">Copyright 2021 The MathWorks, Inc.<br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2020b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Battery Management System
+% 
+% This example shows how to model a battery management system for the state
+% of charge estimation. The battery pack comprises of two battery modules,
+% which are combinations of cells in series and parallel. The *Battery 
+% (Table-Based)* Simscape Electrical(TM) block models each battery cell. 
+% In this example, all cells have the same initial temperature and state of 
+% charge, but different resistance. The state of each cell is estimated 
+% using battery pack current and the measured cell voltages.
+% 
+% Copyright 2021 The MathWorks, Inc.
+
+
+%% Model Overview
+% This example models a battery pack connected to an auxiliary power load 
+% due to the coolant pump. The BMS subsystem defines the required amount of
+% the coolant flowrate to cool the high voltage (HV) battery pack. A 
+% controlled current source defines the DC current demand from the HV 
+% battery pack. To calculate the state of charge for the battery pack, the
+% BMS subsystem uses the cell voltages and temperature, and the battery
+% pack current. The cell capacity does not change with time or cycling and 
+% is the same for all the cells.
+
+open_system('Battery_Management_System')
+
+%% Battery Cell Overview
+% The battery cell is modeled using the equivalent circuit method. You can 
+% find the equivalent circuit parameters used for each cell in the 
+% |Battery_Management_System_param.m| initialization file . To characterize a 
+% lithium-ion cell, this example uses a 1-RC model by setting the |charge dynamics| 
+% parameter to |One time-constant dynamics|. This example does not consider 
+% cell capacity fade or charge leakage. 
+
+%% Build Battery Pack
+% The Battery Pack comprises of 2 series connected Battery Modules. Each 
+% module consists of 10 series connected |Pouch| type cells. The value of 
+% the terminal resistance, |R0|, in the first cell of the first module is 
+% 5% higher than the value of terminal resistance in the other cells. The 
+% value of the terminal resistance, |R0|, in the third cell of the second 
+% module is 3% lower than the value of |R0| in the other cells. The 
+% |Battery_Management_System_param.m| file sets this scenario by specifying
+% |iniR01(1,1)| to 1.05 and |iniR02(1,3)| to 0.97.
+% 
+
+open_system('Battery_Management_System/Battery Pack')
+
+%% Define Battery Management System
+% The BMS subsystem calculates the battery state of charge and controls the
+% coolant flowrate. The coolant pump power loss is calculated based on the
+% value at the |FlwR| input port, with 500W being the maximum pump power 
+% consumption. This example uses the extended Kalman-Filter (EKF) in the 
+% SOC estimation subsystem to calculate the state of charge. 
+
+open_system('Battery_Management_System/BMS')
+
+%% Define Battery State-of-Charge Estimation
+% To calculate the state of charge, the EKF uses the pack current, cell
+% voltages, and temperature data. The SOC estimation subsystem also
+% implements a lookup table to define the cell model. The EKF reduces the
+% error between the prediction and measurement of the cell voltages.
+
+open_system('Battery_Management_System/BMS/SOC estimation')
+ 
+%% Simulation Results
+% This figure shows the simulation results with the parameters defined in
+% the |Battery_Management_System_param.m| file. The cell voltages are 
+% different for the cells with different resistance |R0|. The BMS accurately 
+% tracks the state of charge of all cells.
+
+Battery_Management_System_plot1state 
+
+
+%%
+close all
+bdclose all
+
+##### SOURCE END #####
+--></body></html>
