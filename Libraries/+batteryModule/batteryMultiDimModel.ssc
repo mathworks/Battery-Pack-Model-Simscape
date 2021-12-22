@@ -84,6 +84,7 @@ end
 outputs
     outputCellSOC      = {ones(1,Ns*Np),'1'};  % SOC
     outputCellTemp     = {ones(1,Ns*Np),'K'};  % Temp
+    outputCellV        = {ones(1,Ns*Np),'V'};  % V
     %
     bottom_thermPort   = {zeros(2,Ns*Np),'1'}; % QT_b
     top_thermPort      = {zeros(2,Ns*Np),'1'}; % QT_t
@@ -161,6 +162,7 @@ parameters
     %
     moduleExtHeat={zeros(1,10),'W'};                                % External heat 
     moduleCellBalancing=batteryModule.batteryCellBalancing.none;    % Cell balancing
+    moduleCellVoltages=batteryModule.batteryCellVoltages.no;        % Output cell voltages (yes/no)
     passiveShuntR={50,'Ohm'};                                       % Shunt resistor
     passiveSWclosedR={0.01,'Ohm'};                                  % Switch closed resistance
     passiveSWopenCond={1e-8,'1/Ohm'};                               % Switch open conductance
@@ -277,7 +279,7 @@ annotations
                 UIGroup("Cell Electrical",LUTpointsTemp,cellAHvector,LUTpointsSOC,V0_mat, prm_dir, R0_mat, R0_dis_mat, R0_ch_mat, prm_leak, Rleak_vec, extrapolation_option, prm_dyn, R1_mat, tau1_mat, R2_mat, tau2_mat, R3_mat, tau3_mat, R4_mat, tau4_mat, R5_mat, tau5_mat)
                 UIGroup("Cell Capacity Fade", prm_fade, N0, dV0, dR0, dAH, dRleak, dR1, dR2, dR3, dR4, dR5, N0vec, Tfadevec, dV0vec, dR0vec, dAHvec, dRleakvec, dR1vec, dR2vec, dR3vec, dR4vec, dR5vec, dV0mat, dR0mat, dAHmat, dRleakmat, dR1mat, dR2mat, dR3mat, dR4mat, dR5mat) 
                 UIGroup("Cell Thermal",cellThermalMass, cellThermalCond,cellThermalCond_inPlane)
-                UIGroup("Module Electrical",Ns,Np,cellTypeSelection,cellHeight,cellWidth, cellThickness, cellDiameter, cellCylinLine, moduleExternalR,moduleCellBalancing,passiveShuntR,passiveSWclosedR,passiveSWopenCond,passiveSWthreshold) 
+                UIGroup("Module Electrical",Ns,Np,cellTypeSelection,cellHeight,cellWidth, cellThickness, cellDiameter, cellCylinLine, moduleExternalR,moduleCellBalancing,passiveShuntR,passiveSWclosedR,passiveSWopenCond,passiveSWthreshold,moduleCellVoltages) 
                 UIGroup("Module Thermal", thermalManagement,cellHeatTrCoeff,thermal_moduleBottom,htc_bottom,moduleCooling_b,LUTpointsFlowrate_b,LUTpointsTemp_b,thermal_moduleTop,htc_top,moduleCooling_t,LUTpointsFlowrate_t,LUTpointsTemp_t,thermal_moduleRight,htc_right,moduleCooling_r,LUTpointsFlowrate_r,LUTpointsTemp_r,thermal_moduleLeft,htc_left,moduleCooling_l,LUTpointsFlowrate_l,LUTpointsTemp_l,thermal_modulePos,htc_pos,moduleCooling_p,LUTpointsFlowrate_p,LUTpointsTemp_p,thermal_moduleNeg,htc_neg,moduleCooling_n,LUTpointsFlowrate_n,LUTpointsTemp_n,moduleExtHeat) 
                 UIGroup("Cell-to-Cell Variation",cellTemp, cellSOC, moduleCellAHpercentVar,moduleCellLeakPercentVar,moduleCellR0PercentVar)]
 end
@@ -470,6 +472,7 @@ annotations
     negEnd_thermPort_R : Side=Right;
     negEnd_thermPort_C : Side=Right;
     Qn                 : Side=Right;
+    outputCellV        : Side=Left;
 end
 
 % Parameter definition for internal usage; processing user defined parameters
@@ -660,6 +663,19 @@ if modelComplexity == batteryModule.batteryAbstractionLevel.lumped || ...
 else
     %
 end
+
+if modelComplexity == batteryModule.batteryAbstractionLevel.lumped     
+    annotations
+        [moduleCellVoltages,outputCellV] : ExternalAccess=none;
+    end    
+else
+    if moduleCellVoltages == batteryModule.batteryCellVoltages.no
+        annotations
+            [outputCellV] : ExternalAccess=none;
+        end
+    end
+end
+
 
 if modelComplexity == batteryModule.batteryAbstractionLevel.grouped
     equations
@@ -1491,6 +1507,7 @@ if modelComplexity == batteryModule.batteryAbstractionLevel.detailed
     	% Record output
         outputCellTemp == [battery_thermal.temperature];
         outputCellSOC  == [battery_thermal.stateOfCharge];
+        outputCellV    == [battery_thermal.v];
     end
     % Loop over number of cells and create array of components for Cell Model 
     % and the relevant heat transfer
@@ -2329,9 +2346,17 @@ elseif modelComplexity == batteryModule.batteryAbstractionLevel.grouped
             SOCval3 = ones(1,k)*SOCval(3);
             SOCval4 = ones(1,l)*SOCval(4);
             SOCval5 = ones(1,m)*SOCval(5);
+            % Voltage is assumed to be dropping equally among all series strings
+            cellVoltval  = [battery_thermal_grouped.v];
+            cellVoltval1 = ones(1,i)*cellVoltval(1)/(Np*i);
+            cellVoltval2 = ones(1,j)*cellVoltval(2)/(Np*j);
+            cellVoltval3 = ones(1,k)*cellVoltval(3)/(Np*k);
+            cellVoltval4 = ones(1,l)*cellVoltval(4)/(Np*l);
+            cellVoltval5 = ones(1,m)*cellVoltval(5)/(Np*m);
         in
             outputCellTemp == [tempVal1,tempVal2,tempVal3,tempVal4,tempVal5];
             outputCellSOC  == [SOCval1,SOCval2,SOCval3,SOCval4,SOCval5];
+            outputCellV    == [cellVoltval1,cellVoltval2,cellVoltval3,cellVoltval4,cellVoltval5];
         end
     end
     %
