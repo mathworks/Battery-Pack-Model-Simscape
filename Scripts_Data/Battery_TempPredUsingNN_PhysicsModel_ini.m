@@ -1,7 +1,7 @@
 %% Parameters for Lithium-Ion Battery Pack cooling example
 % Battery cooling example setup and workspace variables
 
-% Copyright 2020-2021 The MathWorks, Inc.
+% Copyright 2020 The MathWorks, Inc.
 
 coolantTemp=298.15;   % Coolant inlet T in K
 ambient=298.15;       % Ambient temperature in K
@@ -10,7 +10,8 @@ initialPackSOC=0.995; % Pack intial SOC (-)
 FlwR=1; 
 %% Lookup Table Points
 T_vec=[273.15, 298.15, 323.15];             % Temperature vector T [K]
-AH_vec=[14, 20, 21];                        % Cell capacity vector AH(T) [Ahr]
+AH=20.5;                                    % Cell capacity [Ahr]
+% [14, 20, 21]
 SOC_vec=[0, .25, .75, 1];                   % Cell state of charge vector SOC [-]
 Flowrate_vec=[0 0.01 0.02 0.03 0.04 0.05];  % Flowrate vector L [kg/s]
 %

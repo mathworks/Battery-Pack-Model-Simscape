@@ -9,8 +9,8 @@ coolantTemp=300;    % Coolant inlet temperature in K
 initialPackSOC=0.9;	% Pack intial SOC (-)
 % -------------------------------------------------------------------------
 %% Cell Electrical
-T_vec=[278 293 313];                 % Temperature vector T [K]
-AH_vec=[28.0081 27.6250 27.6392];    % Cell capacity vector AH(T) [Ahr]
+T_vec=[278 293 313];     % Temperature vector T [K]
+AH=27.8;                 % Cell capacity AH [Ahr]
 SOC_vec=[0 0.1 0.25 0.5 0.75 0.9 1]; % Cell state of charge vector SOC [-]
 %
 V0_mat=[

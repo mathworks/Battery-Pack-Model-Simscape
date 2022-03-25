@@ -157,7 +157,7 @@ battery_cell_cp = 795; % [J/kg/K] Cell specific heat
 
 battery_SOC_LUT = [0 0.1 0.25 0.5 0.75 0.9 1]';   % State of charge table breakpoints S
 battery_temperature_LUT = [278 293 313];          % Temperature table breakpoints T
-battery_capacity_LUT = [28.0081 27.6250 27.6392]; % Battery cell capacity at different (T) points [Ahr]
+battery_capacity_Ahr = 27.8;                      % Battery cell capacity [Ahr]
 battery_Em_LUT = [
     3.4966    3.5057    3.5148
     3.5519    3.5660    3.5653

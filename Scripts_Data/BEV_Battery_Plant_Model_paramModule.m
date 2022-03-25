@@ -5,7 +5,7 @@
 
 %% Battery Module : Cell Electrical
 battery_vecT=[273.15, 298.15, 323.15]; % [K]
-battery_vecAhr=5*[2.9, 4.1, 4.2];        % [Ahr]
+battery_Ahr=20.8;                      % [Ahr]
 battery_vecSOC=[0, .25, .75, 1];       % [-]
 %
 battery_V0=[3.20, 3.10, 3.14; ...
