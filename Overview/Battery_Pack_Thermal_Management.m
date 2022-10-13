@@ -22,6 +22,7 @@
 % 
 
 open_system('Battery_Pack_Thermal_Management')
+set_param(find_system(bdroot,'FindAll', 'on','type','annotation','Tag','ModelFeatures'),'Interpreter','off')
 
 %% Battery Cell Overview
 % The battery cell is modeled using the equivalent circuit method. The 

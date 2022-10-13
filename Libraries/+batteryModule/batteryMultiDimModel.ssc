@@ -169,7 +169,7 @@ parameters
     passiveSWthreshold={0.5,'1'};                                   % Switch operation threshold
     %
     % Cell Model
-    prm_dir = ee.enum.battery.prm_dir.noCurrentDirectionality;      % Current directionality
+    prm_dir = simscape.enum.tablebattery.prm_dir.noCurrentDirectionality;      % Current directionality
     V0_mat = {[3.20 3.10 3.14; ...
         3.25 3.27 3.30; ...
         3.28 3.31 3.34; ...
@@ -188,13 +188,13 @@ parameters
         0.027 0.013 0.021], 'Ohm'};                       % Terminal resistance during charging, R0(SOC,T)    
     moduleCellR0PercentVar = {ones(1,10),'1'};            % Cell terminal resistance R0 variation from baseline R0
 
-    prm_leak = ee.enum.battery.prm_leak.disabled;         % Self-discharge
+    prm_leak = simscape.enum.tablebattery.prm_leak.disabled;         % Self-discharge
     Rleak_vec = {[8e3 7e3 6e3], 'Ohm'};                   % Self-discharge resistance, Rleak(T)
     moduleCellLeakPercentVar = {ones(1,10),'1'};          % Cell Self-discharge resistance variation from baseline Rleak
 
     extrapolation_option = simscape.enum.extrapolation.nearest; % Extrapolation method for all tables
         
-    prm_dyn = ee.enum.battery.prm_dyn.off;         % Charge dynamics
+    prm_dyn = simscape.enum.tablebattery.prm_dyn.off;         % Charge dynamics
     R1_mat = {[0.089 0.076 0.010; ...
         0.042 0.022 0.099; ...
         0.019 0.007 0.002; ...
@@ -236,7 +236,7 @@ parameters
         2 14 330; ...
         3310 13419 30216], 's'};                   % Fifth time constant, tau5(SOC,T)
     
-    prm_fade = ee.enum.battery.prm_fade.equations; % Fade characteristics defined by
+    prm_fade = simscape.enum.tablebattery.prm_fade.equations; % Fade characteristics defined by
     
     N0 = {100, '1'};                        % Number of discharge cycles, N
     dV0 = {0, '1'};                         % Change in no-load voltage after N discharge cycles (%)
@@ -275,8 +275,8 @@ parameters
 end
 
 parameters(Access=private)
-    SOC_port =      ee.enum.enable.yes;                 % Show SOC measurement port
-    thermal_port=   simscape.enum.thermaleffects.model; % Show thermal port
+    SOC_port =       simscape.enum.tablebattery.enable.yes; % Show SOC measurement port
+    thermal_port=   simscape.enum.thermaleffects.model;     % Show thermal port
 end
 
 annotations
@@ -528,7 +528,7 @@ parameters(Access=private)
     moduleCooling0=moduleCooling;
     minLength={1e-4,'m'}; 
     minThermalK={1e-3, 'W/(m * K)'}; 
-    T_dependence=ee.enum.temperature_dependence.yes;
+    T_dependence=simscape.enum.tablebattery.temperature_dependence.yes;
     %
     moduleCooling_val=value(moduleCooling,'W/K');
     moduleCooling2Dlumped=permute(sum(permute(moduleCooling_val,[3,1,2])),[2,3,1]);
@@ -691,7 +691,7 @@ end
 
 % Check for current directionality feature; enable visibility of relevant 
 % parameters
-if prm_dir == ee.enum.battery.prm_dir.noCurrentDirectionality
+if prm_dir == simscape.enum.tablebattery.prm_dir.noCurrentDirectionality
     annotations
         [R0_dis_mat,R0_ch_mat] : ExternalAccess=none;
     end
@@ -730,7 +730,7 @@ else
     end
 end
         
-if prm_leak == ee.enum.battery.prm_leak.disabled
+if prm_leak == simscape.enum.tablebattery.prm_leak.disabled
     annotations
         [Rleak_vec,moduleCellLeakPercentVar] : ExternalAccess=none;
     end
@@ -754,29 +754,29 @@ end
 
 % Check for cell dynamics and make appropiate resistance(s) and time 
 % constant(s) visible
-if prm_dyn == ee.enum.battery.prm_dyn.rc1
+if prm_dyn == simscape.enum.tablebattery.prm_dyn.rc1
     annotations
         [R2_mat,tau2_mat, ...
             R3_mat,tau3_mat, ...
             R4_mat,tau4_mat, ...
             R5_mat,tau5_mat]: ExternalAccess=none;
     end
-elseif prm_dyn == ee.enum.battery.prm_dyn.rc2
+elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc2
     annotations
         [R3_mat,tau3_mat, ...
             R4_mat,tau4_mat, ...
             R5_mat,tau5_mat]: ExternalAccess=none;
     end
-elseif prm_dyn == ee.enum.battery.prm_dyn.rc3
+elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc3
     annotations
         [R4_mat,tau4_mat, ...
             R5_mat,tau5_mat]: ExternalAccess=none;
     end
-elseif prm_dyn == ee.enum.battery.prm_dyn.rc4
+elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc4
     annotations
         [R5_mat,tau5_mat]: ExternalAccess=none;
     end
-elseif prm_dyn == ee.enum.battery.prm_dyn.rc5
+elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc5
     % do nothing
 else
     annotations
@@ -802,11 +802,11 @@ equations
 end
    
 % Check for cell dynamics and check parameter size and values
-if prm_dyn == ee.enum.battery.prm_dyn.rc1 || ...
-        prm_dyn == ee.enum.battery.prm_dyn.rc2 || ...
-        prm_dyn == ee.enum.battery.prm_dyn.rc3 || ...
-        prm_dyn == ee.enum.battery.prm_dyn.rc4 || ...
-        prm_dyn == ee.enum.battery.prm_dyn.rc5
+if prm_dyn == simscape.enum.tablebattery.prm_dyn.rc1 || ...
+        prm_dyn == simscape.enum.tablebattery.prm_dyn.rc2 || ...
+        prm_dyn == simscape.enum.tablebattery.prm_dyn.rc3 || ...
+        prm_dyn == simscape.enum.tablebattery.prm_dyn.rc4 || ...
+        prm_dyn == simscape.enum.tablebattery.prm_dyn.rc5
     equations
         assert(all(R1_mat(:)>0));
         assert(all(tau1_mat(:)>0));
@@ -816,10 +816,10 @@ if prm_dyn == ee.enum.battery.prm_dyn.rc1 || ...
     end
 end
 % Check for cell dynamics and check parameter size and values
-if prm_dyn == ee.enum.battery.prm_dyn.rc2 || ...
-        prm_dyn == ee.enum.battery.prm_dyn.rc3 || ...
-        prm_dyn == ee.enum.battery.prm_dyn.rc4 || ...
-        prm_dyn == ee.enum.battery.prm_dyn.rc5
+if prm_dyn == simscape.enum.tablebattery.prm_dyn.rc2 || ...
+        prm_dyn == simscape.enum.tablebattery.prm_dyn.rc3 || ...
+        prm_dyn == simscape.enum.tablebattery.prm_dyn.rc4 || ...
+        prm_dyn == simscape.enum.tablebattery.prm_dyn.rc5
     equations
         assert(all(R2_mat(:)>0));
         assert(all(tau2_mat(:)>0));
@@ -829,9 +829,9 @@ if prm_dyn == ee.enum.battery.prm_dyn.rc2 || ...
     end
 end
 % Check for cell dynamics and check parameter size and values
-if prm_dyn == ee.enum.battery.prm_dyn.rc3 || ...
-        prm_dyn == ee.enum.battery.prm_dyn.rc4 || ...
-        prm_dyn == ee.enum.battery.prm_dyn.rc5
+if prm_dyn == simscape.enum.tablebattery.prm_dyn.rc3 || ...
+        prm_dyn == simscape.enum.tablebattery.prm_dyn.rc4 || ...
+        prm_dyn == simscape.enum.tablebattery.prm_dyn.rc5
     equations
         assert(all(R3_mat(:)>0));
         assert(all(tau3_mat(:)>0));
@@ -841,8 +841,8 @@ if prm_dyn == ee.enum.battery.prm_dyn.rc3 || ...
     end
 end
 % Check for cell dynamics and check parameter size and values
-if prm_dyn == ee.enum.battery.prm_dyn.rc4 || ...
-        prm_dyn == ee.enum.battery.prm_dyn.rc5
+if prm_dyn == simscape.enum.tablebattery.prm_dyn.rc4 || ...
+        prm_dyn == simscape.enum.tablebattery.prm_dyn.rc5
     equations
         assert(all(R4_mat(:)>0));
         assert(all(tau4_mat(:)>0));
@@ -852,7 +852,7 @@ if prm_dyn == ee.enum.battery.prm_dyn.rc4 || ...
     end
 end
 % Check for cell dynamics and check parameter size and values
-if prm_dyn == ee.enum.battery.prm_dyn.rc5
+if prm_dyn == simscape.enum.tablebattery.prm_dyn.rc5
     equations
         assert(all(R5_mat(:)>0));
         assert(all(tau5_mat(:)>0));
@@ -863,14 +863,14 @@ if prm_dyn == ee.enum.battery.prm_dyn.rc5
 end
 
 % Check for Cell fade model definition
-if prm_fade == ee.enum.battery.prm_fade.tableN
+if prm_fade == simscape.enum.tablebattery.prm_fade.tableN
     annotations
         [N0,dV0,dR0,dAH,dRleak,dR1,dR2,dR3,dR4,dR5, ...
             Tfadevec,dV0mat,dR0mat,dAHmat,dRleakmat, ...
             dR1mat,dR2mat,dR3mat,dR4mat,dR5mat] : ExternalAccess=none;
     end
     
-    if prm_leak == ee.enum.battery.prm_leak.disabled
+    if prm_leak == simscape.enum.tablebattery.prm_leak.disabled
         annotations
             dRleakvec : ExternalAccess=none;
         end
@@ -880,7 +880,7 @@ if prm_fade == ee.enum.battery.prm_fade.tableN
         end
     end
     
-    if prm_dyn == ee.enum.battery.prm_dyn.rc1
+    if prm_dyn == simscape.enum.tablebattery.prm_dyn.rc1
         annotations
             [dR2vec,dR3vec,dR4vec,dR5vec] : ExternalAccess=none;
         end
@@ -888,7 +888,7 @@ if prm_fade == ee.enum.battery.prm_fade.tableN
         equations
             assert(length(N0vec) == length(dR1vec));
         end
-    elseif prm_dyn == ee.enum.battery.prm_dyn.rc2
+    elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc2
         annotations
             [dR3vec,dR4vec,dR5vec] : ExternalAccess=none;
         end
@@ -897,7 +897,7 @@ if prm_fade == ee.enum.battery.prm_fade.tableN
             assert(length(N0vec) == length(dR1vec));
             assert(length(N0vec) == length(dR2vec));
         end
-    elseif prm_dyn == ee.enum.battery.prm_dyn.rc3
+    elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc3
         annotations
             [dR4vec,dR5vec] : ExternalAccess=none;
         end
@@ -907,7 +907,7 @@ if prm_fade == ee.enum.battery.prm_fade.tableN
             assert(length(N0vec) == length(dR2vec));
             assert(length(N0vec) == length(dR3vec));
         end
-    elseif prm_dyn == ee.enum.battery.prm_dyn.rc4
+    elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc4
         annotations
             [dR5vec] : ExternalAccess=none;
         end
@@ -918,7 +918,7 @@ if prm_fade == ee.enum.battery.prm_fade.tableN
             assert(length(N0vec) == length(dR3vec));
             assert(length(N0vec) == length(dR4vec));
         end
-    elseif prm_dyn == ee.enum.battery.prm_dyn.rc5
+    elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc5
         equations
             assert(length(N0vec) == length(dR1vec));
             assert(length(N0vec) == length(dR2vec));
@@ -938,14 +938,14 @@ if prm_fade == ee.enum.battery.prm_fade.tableN
         assert(length(N0vec) == length(dR0vec));
         assert(length(N0vec) == length(dAHvec));
     end
-elseif prm_fade == ee.enum.battery.prm_fade.tableNandT
+elseif prm_fade == simscape.enum.tablebattery.prm_fade.tableNandT
     annotations
         [N0,dV0,dR0,dAH,dRleak,dR1,dR2,dR3,dR4,dR5, ...
             dV0vec,dR0vec,dAHvec,dRleakvec, ...
             dR1vec,dR2vec,dR3vec,dR4vec,dR5vec] : ExternalAccess=none;
     end
     
-    if prm_leak == ee.enum.battery.prm_leak.disabled
+    if prm_leak == simscape.enum.tablebattery.prm_leak.disabled
         annotations
             dRleakmat : ExternalAccess=none;
         end
@@ -955,7 +955,7 @@ elseif prm_fade == ee.enum.battery.prm_fade.tableNandT
         end
     end
     
-    if prm_dyn == ee.enum.battery.prm_dyn.rc1
+    if prm_dyn == simscape.enum.tablebattery.prm_dyn.rc1
         annotations
             [dR2mat,dR3mat,dR4mat,dR5mat] : ExternalAccess=none;
         end
@@ -963,7 +963,7 @@ elseif prm_fade == ee.enum.battery.prm_fade.tableNandT
         equations
             assert(all(size(dR1mat) == [length(N0vec) length(Tfadevec)]));
         end
-    elseif prm_dyn == ee.enum.battery.prm_dyn.rc2
+    elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc2
         annotations
             [dR3mat,dR4mat,dR5mat] : ExternalAccess=none;
         end
@@ -972,7 +972,7 @@ elseif prm_fade == ee.enum.battery.prm_fade.tableNandT
             assert(all(size(dR1mat) == [length(N0vec) length(Tfadevec)]));
             assert(all(size(dR2mat) == [length(N0vec) length(Tfadevec)]));
         end
-    elseif prm_dyn == ee.enum.battery.prm_dyn.rc3
+    elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc3
         annotations
             [dR4mat,dR5mat] : ExternalAccess=none;
         end
@@ -982,7 +982,7 @@ elseif prm_fade == ee.enum.battery.prm_fade.tableNandT
             assert(all(size(dR2mat) == [length(N0vec) length(Tfadevec)]));
             assert(all(size(dR3mat) == [length(N0vec) length(Tfadevec)]));
         end
-    elseif prm_dyn == ee.enum.battery.prm_dyn.rc4
+    elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc4
         annotations
             [dR5mat] : ExternalAccess=none;
         end
@@ -993,7 +993,7 @@ elseif prm_fade == ee.enum.battery.prm_fade.tableNandT
             assert(all(size(dR3mat) == [length(N0vec) length(Tfadevec)]));
             assert(all(size(dR4mat) == [length(N0vec) length(Tfadevec)]));
         end
-    elseif prm_dyn == ee.enum.battery.prm_dyn.rc5
+    elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc5
         equations
             assert(all(size(dR1mat) == [length(N0vec) length(Tfadevec)]));
             assert(all(size(dR2mat) == [length(N0vec) length(Tfadevec)]));
@@ -1022,29 +1022,29 @@ else
             dR1mat,dR2mat,dR3mat,dR4mat,dR5mat] : ExternalAccess=none;
     end
     
-    if prm_leak == ee.enum.battery.prm_leak.disabled
+    if prm_leak == simscape.enum.tablebattery.prm_leak.disabled
         annotations
             dRleak : ExternalAccess=none;
         end
     end
     
-    if prm_dyn == ee.enum.battery.prm_dyn.rc1
+    if prm_dyn == simscape.enum.tablebattery.prm_dyn.rc1
         annotations
             [dR2,dR3,dR4,dR5] : ExternalAccess=none;
         end
-    elseif prm_dyn == ee.enum.battery.prm_dyn.rc2
+    elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc2
         annotations
             [dR3,dR4,dR5] : ExternalAccess=none;
         end
-    elseif prm_dyn == ee.enum.battery.prm_dyn.rc3
+    elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc3
         annotations
             [dR4,dR5] : ExternalAccess=none;
         end
-    elseif prm_dyn == ee.enum.battery.prm_dyn.rc4
+    elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc4
         annotations
             dR5 : ExternalAccess=none;
         end
-    elseif prm_dyn == ee.enum.battery.prm_dyn.rc5
+    elseif prm_dyn == simscape.enum.tablebattery.prm_dyn.rc5
         % do nothing
     else
         annotations
@@ -1515,10 +1515,10 @@ if modelComplexity == batteryModule.batteryAbstractionLevel.detailed
     end
     % Loop over number of cells and create array of components for Cell Model 
     % and the relevant heat transfer
-    if prm_leak == ee.enum.battery.prm_leak.disabled
+    if prm_leak == simscape.enum.tablebattery.prm_leak.disabled
         for i=1:Ns*Np
             components(ExternalAccess=observe)
-               battery_thermal(i) = ee.sources.table_battery(...
+               battery_thermal(i) = batteryecm.table_battery(...
                     SOC_vec=LUTpointsSOC,T_dependence=T_dependence,T_vec=LUTpointsTemp,...
                     prm_dir=prm_dir,V0_mat=V0_mat,...
                     R0_mat=R0_mat*moduleCellR0PercentVar(i),...
@@ -1544,7 +1544,7 @@ if modelComplexity == batteryModule.batteryAbstractionLevel.detailed
     else
          for i=1:Ns*Np
             components(ExternalAccess=observe)
-            	battery_thermal(i) = ee.sources.table_battery(...
+            	battery_thermal(i) = batteryecm.table_battery(...
                     SOC_vec=LUTpointsSOC,T_dependence=T_dependence,T_vec=LUTpointsTemp,...
                     prm_dir=prm_dir,V0_mat=V0_mat,...
                     R0_mat=R0_mat*moduleCellR0PercentVar(i),...
@@ -2366,10 +2366,10 @@ elseif modelComplexity == batteryModule.batteryAbstractionLevel.grouped
         end
     end
     %
-    if prm_leak == ee.enum.battery.prm_leak.disabled
+    if prm_leak == simscape.enum.tablebattery.prm_leak.disabled
         for i=1:numOfSections
             components(ExternalAccess=observe)
-                battery_thermal_grouped(i) = ee.sources.table_battery(...
+                battery_thermal_grouped(i) = batteryecm.table_battery(...
                     SOC_vec=LUTpointsSOC,T_dependence=T_dependence,T_vec=LUTpointsTemp,...
                     prm_dir=prm_dir,V0_mat=V0_mat*numCells5section(i)/Np,...
                     R0_mat=R0_mat*grouped_moduleCellR0PercentVar(i)*numCells5section(i)/(Np*Np),...
@@ -2399,7 +2399,7 @@ elseif modelComplexity == batteryModule.batteryAbstractionLevel.grouped
     else
         for i=1:numOfSections
             components(ExternalAccess=observe)
-                battery_thermal_grouped(i) = ee.sources.table_battery(...
+                battery_thermal_grouped(i) = batteryecm.table_battery(...
                     SOC_vec=LUTpointsSOC,T_dependence=T_dependence,T_vec=LUTpointsTemp,...
                     prm_dir=prm_dir,V0_mat=V0_mat*numCells5section(i)/Np,...
                     R0_mat=R0_mat*grouped_moduleCellR0PercentVar(i)*numCells5section(i)/(Np*Np),...
@@ -2950,7 +2950,7 @@ else
     end
     %
     components(ExternalAccess=observe)
-        battery_thermal_lumped = ee.sources.table_battery(...
+        battery_thermal_lumped = batteryecm.table_battery(...
             SOC_vec=LUTpointsSOC,T_dependence=T_dependence,T_vec=LUTpointsTemp,...
             prm_dir=prm_dir,V0_mat=lumped_V0_mat,R0_mat=lumped_R0_mat,...
             R0_dis_mat=lumped_R0_dis_mat,R0_ch_mat=lumped_R0_ch_mat,...

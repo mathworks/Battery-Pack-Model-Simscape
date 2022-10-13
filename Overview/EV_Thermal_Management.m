@@ -43,6 +43,7 @@
 %% Model
 
 open_system('EV_Thermal_Management')
+set_param(find_system(bdroot,'FindAll', 'on','type','annotation','Tag','ModelFeatures'),'Interpreter','off')
 
 %% Scenario Subsystem
 %

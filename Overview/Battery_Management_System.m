@@ -22,6 +22,7 @@
 % is the same for all the cells.
 
 open_system('Battery_Management_System')
+set_param(find_system(bdroot,'FindAll', 'on','type','annotation','Tag','ModelFeatures'),'Interpreter','off')
 
 %% Battery Cell Overview
 % The battery cell is modeled using the equivalent circuit method. You can 
