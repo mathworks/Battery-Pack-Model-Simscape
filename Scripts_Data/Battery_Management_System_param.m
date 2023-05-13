@@ -1,7 +1,7 @@
 %% Parameters for Lithium-Ion Battery Pack cooling example
 % Battery cooling example setup and workspace variables
 % 
-% Copyright 2021 The MathWorks, Inc.
+% Copyright 2021-2023 The MathWorks, Inc.
 % 
 samplingTime=1;   % Sampling time (s)
 ambient=300;        % Ambient temperature in K

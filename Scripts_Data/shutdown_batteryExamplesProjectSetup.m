@@ -1,5 +1,5 @@
 % Shutdown script for Battery Examples
-% Copyright 2020-2021 The MathWorks, Inc.
+% Copyright 2020-2023 The MathWorks, Inc.
 
 curr_proj = simulinkproject;
 cd(curr_proj.RootFolder)

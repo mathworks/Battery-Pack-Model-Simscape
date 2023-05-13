@@ -9,7 +9,7 @@ function [LUTpointsTemp_coolant,LUTpointsFlowrate,moduleCooling,thermalLUT_selec
     LUTpointsFlowrate_n,moduleCooling_n,LUTpointsTemp_n)
 
 
-    % Copyright 2020-2021 The MathWorks, Inc.
+    % Copyright 2020-2023 The MathWorks, Inc.
 
     thermalLUT_selected=0;
     if thermalManagement == batteryModule.batteryCoolingSystem.none

@@ -1,5 +1,5 @@
 function groupedVal = getGroupedModelParam1Dvec(param_val,cellIndex5Section,numCells5section)
-% Copyright 2020-2021 The MathWorks, Inc.
+% Copyright 2020-2023 The MathWorks, Inc.
 
     tmpVar01=sum(param_val(1:cellIndex5Section(1)))/numCells5section(1);
     tmpVar02=sum(param_val(cellIndex5Section(1)+1:cellIndex5Section(2)))/numCells5section(2);

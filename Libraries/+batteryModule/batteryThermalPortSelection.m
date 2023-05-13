@@ -1,7 +1,7 @@
 classdef batteryThermalPortSelection < int32
 % Battery Thermal Port Selection
 %    
-% Copyright 2020-2021 The MathWorks, Inc.
+% Copyright 2020-2023 The MathWorks, Inc.
 % 
     enumeration
         thermalPortConn  (1)

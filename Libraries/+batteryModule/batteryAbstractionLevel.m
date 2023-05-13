@@ -1,7 +1,7 @@
 classdef batteryAbstractionLevel < int32
 % Battery abstraction selection definition.
     
-% Copyright 2020-2021 The MathWorks, Inc.
+% Copyright 2020-2023 The MathWorks, Inc.
     enumeration
         lumped   (1)
         grouped  (2)

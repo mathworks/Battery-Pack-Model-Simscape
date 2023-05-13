@@ -22,11 +22,11 @@ Open batteryExamplesProjectSetup.prj to get started up the project path. The
 project shortcut buttons in the toolstrip open these three examples.
 
 All examples have a battery-module custom component that is based on 
-Simscape Electrical [Battery (Table-Based)](https://www.mathworks.com/help/sps/ref/batterytablebased.html)
+Simscape Electrical [Battery (Table-Based)](https://www.mathworks.com/help/physmod/sps/ref/batterytablebased.html)
 block for modeling battery behavior. Please visit the [Simscape Electrical](https://www.mathworks.com/products/simscape-electrical.html) 
 page to learn more about modeling electrical systems.
 
-[![View Battery Pack Model in Simscape on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/82330-battery-pack-design-solution-for-battery-evs-in-simscape)
+[![View Battery Pack Model in Simscape on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/82330-battery-pack-model-in-simscape)
 
 
 ## **Battery Pack Thermal Management**

@@ -1,7 +1,7 @@
 classdef batteryCellBalancing < int32
 % Battery type selection definition.
     
-% Copyright 2020-2021 The MathWorks, Inc.
+% Copyright 2020-2023 The MathWorks, Inc.
     enumeration
         none              (1)
         passive           (2)

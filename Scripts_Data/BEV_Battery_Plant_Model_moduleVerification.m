@@ -2,7 +2,7 @@
 % based approach
 % 
 
-% Copyright 2020-2021 The MathWorks, Inc.
+% Copyright 2020-2023 The MathWorks, Inc.
 
 disp('Start Detailed to Grouped model verification')
 vec_coolant_T=module_LUTthermalData{1};
