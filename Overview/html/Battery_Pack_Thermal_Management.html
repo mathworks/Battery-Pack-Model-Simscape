@@ -1,12 +1,17 @@
-
-<!DOCTYPE html
-  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html><head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-   <!--
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Battery Thermal Management</title><meta name="generator" content="MATLAB 9.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-05-13"><meta name="DC.source" content="Battery_Pack_Thermal_Management.m"><style type="text/css">
+      -->
+<title>Battery Thermal Management</title>
+<meta name="generator" content="MATLAB 23.2">
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
+<meta name="DC.date" content="2023-09-15">
+<meta name="DC.source" content="Battery_Pack_Thermal_Management.m">
+<style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +72,50 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Battery Thermal Management</h1><!--introduction--><p>This example shows how to model an automotive battery pack for thermal management tasks. The battery pack consists of several battery modules, which are combinations of cells in series and parallel. Each battery cell is modeled using the <b>Battery (Table-Based)</b> Simscape Electrical block. In this example, the initial temperature and the state of charge are the same for all cells. Eight battery modules, six of one type and two of another type, are connected in series to simulate a battery pack. The Battery Controls subsystem defines the logic to determine the battery pack flowrate for the applied current load.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Model Overview</a></li><li><a href="#2">Battery Cell Overview</a></li><li><a href="#3">Build Battery Pack</a></li><li><a href="#4">Define Battery Controls</a></li><li><a href="#5">Simulation Results</a></li></ul></div><h2 id="1">Model Overview</h2><p>The example models a battery pack connected to an auxiliary power load from a chiller, as defined in Current sensor and Aux. load (pump) subsystem. The BatteryControl subsystem defines how much coolant flowrate is required to cool the HV-BatteryPack. A controlled current source defines DC current demand from the HV-BatteryPack subsystem.</p><img vspace="5" hspace="5" src="Battery_Pack_Thermal_Management_01.png" alt=""> <h2 id="2">Battery Cell Overview</h2><p>The battery cell is modeled using the equivalent circuit method. The equivalent circuit parameters used for each cell can be found in the initialization file <tt>Battery_Pack_Thermal_Management_ini.m</tt>. To characterize a lithium-ion cell, this example uses a 2-RC model. No cell capacity fade or charge leakage is considered in this example.</p><img vspace="5" hspace="5" src="Battery_Pack_Thermal_Management_02.png" alt=""> <h2 id="3">Build Battery Pack</h2><p>The HV-BatteryPack is made up of 8 series connected Battery Modules. Module 1-3 &amp; 6-8 are of same type, with each module consisting of 3 parallel <tt>Pouch</tt> type cells per series of 12 such strings. Module 4 &amp; 5 are of the same type, with each module consisting of 3 parallel cells per series of 16 such strings. All modules have same type of <tt>Pouch</tt> cells with the total number of cells in the HV-BatteryPack being equal to 312 (6 modules of 12X3 cells and 2 modules of 16X3 cells). With each cell being rated at approx. 3.8V/cell, the total pack voltage is close to 400V (~395V). The different modules in this 400V HV-BatteryPack are connected together using busbars, modeled as lumped resistors (R12, R23, R34... R78). The coolant flow maldistrubtion occurs in the pack with modules farther away receiving lesser flow-rate, as specified in the Flow_maldistribution_to_different_Modules subsystem.</p><img vspace="5" hspace="5" src="Battery_Pack_Thermal_Management_03.png" alt=""> <h2 id="4">Define Battery Controls</h2><p>The FlwR_calc subsystem calculates a value for the input <b>FlwR</b> for all modules in the HV-BatteryPack. Pump power loss is calculated based on <b>FlwR</b> value, with 500W being the maximum pump power consumption. Pump power is assumed to have a linear relationship with <b>FlwR</b>, as specified in the subsystem Pump_power_calc.</p><img vspace="5" hspace="5" src="Battery_Pack_Thermal_Management_04.png" alt=""> <h2 id="5">Simulation Results</h2><p>This example uses the parameters defined in the <tt>Battery_Pack_Thermal_Management_ini.m</tt> file and the results of the simulation is shown below.</p><img vspace="5" hspace="5" src="Battery_Pack_Thermal_Management_05.png" alt=""> <p class="footer">Copyright 2020-2023 The MathWorks, Inc.<br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2023a</a><br></p></div><!--
+  </style>
+</head>
+<body>
+<div class="content">
+<h1>Battery Thermal Management</h1>
+<!--introduction-->
+<p>This example shows how to model an automotive battery pack for thermal management tasks. The battery pack consists of several battery modules, which are combinations of cells in series and parallel. Each battery cell is modeled using the <b>Battery (Table-Based)</b> Simscape Electrical block. In this example, the initial temperature and the state of charge are the same for all cells. Eight battery modules, six of one type and two of another type, are connected in series to simulate a battery pack. The Battery Controls subsystem defines the logic to determine the battery pack flowrate for the applied current load.</p>
+<!--/introduction-->
+<h2>Contents</h2>
+<div>
+<ul>
+<li>
+<a href="#1">Model Overview</a>
+</li>
+<li>
+<a href="#2">Battery Cell Overview</a>
+</li>
+<li>
+<a href="#3">Build Battery Pack</a>
+</li>
+<li>
+<a href="#4">Define Battery Controls</a>
+</li>
+<li>
+<a href="#5">Simulation Results</a>
+</li>
+</ul>
+</div>
+<h2 id="1">Model Overview</h2>
+<p>The example models a battery pack connected to an auxiliary power load from a chiller, as defined in Current sensor and Aux. load (pump) subsystem. The BatteryControl subsystem defines how much coolant flowrate is required to cool the HV-BatteryPack. A controlled current source defines DC current demand from the HV-BatteryPack subsystem.</p>
+<img vspace="5" hspace="5" src="Battery_Pack_Thermal_Management_01.png" alt=""> <h2 id="2">Battery Cell Overview</h2>
+<p>The battery cell is modeled using the equivalent circuit method. The equivalent circuit parameters used for each cell can be found in the initialization file <tt>Battery_Pack_Thermal_Management_ini.m</tt>. To characterize a lithium-ion cell, this example uses a 2-RC model. No cell capacity fade or charge leakage is considered in this example.</p>
+<img vspace="5" hspace="5" src="Battery_Pack_Thermal_Management_02.png" alt=""> <h2 id="3">Build Battery Pack</h2>
+<p>The HV-BatteryPack is made up of 8 series connected Battery Modules. Module 1-3 &amp; 6-8 are of same type, with each module consisting of 3 parallel <tt>Pouch</tt> type cells per series of 12 such strings. Module 4 &amp; 5 are of the same type, with each module consisting of 3 parallel cells per series of 16 such strings. All modules have same type of <tt>Pouch</tt> cells with the total number of cells in the HV-BatteryPack being equal to 312 (6 modules of 12X3 cells and 2 modules of 16X3 cells). With each cell being rated at approx. 3.8V/cell, the total pack voltage is close to 400V (~395V). The different modules in this 400V HV-BatteryPack are connected together using busbars, modeled as lumped resistors (R12, R23, R34... R78). The coolant flow maldistrubtion occurs in the pack with modules farther away receiving lesser flow-rate, as specified in the Flow_maldistribution_to_different_Modules subsystem.</p>
+<img vspace="5" hspace="5" src="Battery_Pack_Thermal_Management_03.png" alt=""> <h2 id="4">Define Battery Controls</h2>
+<p>The FlwR_calc subsystem calculates a value for the input <b>FlwR</b> for all modules in the HV-BatteryPack. Pump power loss is calculated based on <b>FlwR</b> value, with 500W being the maximum pump power consumption. Pump power is assumed to have a linear relationship with <b>FlwR</b>, as specified in the subsystem Pump_power_calc.</p>
+<img vspace="5" hspace="5" src="Battery_Pack_Thermal_Management_04.png" alt=""> <h2 id="5">Simulation Results</h2>
+<p>This example uses the parameters defined in the <tt>Battery_Pack_Thermal_Management_ini.m</tt> file and the results of the simulation is shown below.</p>
+<img vspace="5" hspace="5" src="Battery_Pack_Thermal_Management_05.png" alt=""> <p class="footer">Copyright 2020-2023 The MathWorks, Inc.<br>
+<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2023b</a>
+<br>
+</p>
+</div>
+<!--
 ##### SOURCE BEGIN #####
 %% Battery Thermal Management
 % 
@@ -144,4 +192,6 @@ close all
 bdclose all
 
 ##### SOURCE END #####
---></body></html>
+-->
+</body>
+</html>

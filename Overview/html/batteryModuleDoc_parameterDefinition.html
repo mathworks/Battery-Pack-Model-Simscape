@@ -1,12 +1,17 @@
-
-<!DOCTYPE html
-  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html><head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-   <!--
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Battery Module Parameters and Documentation</title><meta name="generator" content="MATLAB 9.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-05-13"><meta name="DC.source" content="batteryModuleDoc_parameterDefinition.m"><style type="text/css">
+      -->
+<title>Battery Module Parameters and Documentation</title>
+<meta name="generator" content="MATLAB 23.2">
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
+<meta name="DC.date" content="2023-09-15">
+<meta name="DC.source" content="batteryModuleDoc_parameterDefinition.m">
+<style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +72,329 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Battery Module Parameters and Documentation</h1><!--introduction--><p>This document details various options available for use in the Battery Module Simscape&#8482; custom component.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Battery Module Overview</a></li><li><a href="#2"><b>Model Fidelity</b></a></li><li><a href="#3">Battery <b>Cell Electrical</b> Parameters</a></li><li><a href="#4">Battery <b>Cell Capacity Fade</b> Parameters</a></li><li><a href="#5">Battery <b>Cell Thermal</b> Parameters</a></li><li><a href="#6">Battery <b>Module Electrical</b> Parameters</a></li><li><a href="#7">Battery <b>Module Thermal</b> Parameters</a></li><li><a href="#8">Battery Module <b>Cell-to-Cell Variation</b> Parameters</a></li><li><a href="#9">Appendix-A</a></li><li><a href="#10">Appendix-B</a></li></ul></div><h2 id="1">Battery Module Overview</h2><p>A Battery Module is defined as a collection of a number of cells in series and / or parallel. A Battery (Table-based) block from the Simscape Electrical library models the battery cell. You can specify the cell-to-cell variations by modifying the relevant parameters inside the custom component. Each module has six sides and you can choose from four different thermal options for each side.</p><h2 id="2"><b>Model Fidelity</b></h2><div><ul><li><b>Select Model Fidelity</b> &#8212; Modeling compexity of the Battery Module component, specified as <tt>Detailed</tt>, <tt>Grouped</tt>, or <tt>Lumped</tt>. <tt>Detailed</tt> model tracks each and every cell in the system. <tt>Lumped</tt> model tracks the whole module as a single unit or as lumped. <tt>Grouped</tt> model tracks the best and the worst cell in the module. The best and the worst cell is determined based on the cell-to-cell variation specified in <b>Effective rate of coolant heat transfer from each cell</b>, <b>Cell terminal resistance R0 variation from baseline</b>, <b>Cell Ahr rating variation</b>, <b>Cell Self- discharge resistance variation from baseline Rleak</b>, or <b>External heat</b>. For more information on the model fidelity, see table in the Appendix-A section. <tt>Grouped</tt> model working principle is shown in the image below. For more information on the <tt>Grouped</tt> model fidelity, see Appendix-B.</li></ul></div><p><img vspace="5" hspace="5" src="batteryModuleDoc_groupedModel.png" alt=""> </p><h2 id="3">Battery <b>Cell Electrical</b> Parameters</h2><p>For the Battery Cell (Table-based) block in the Simscape Electrical library, you can specify these parameters:</p><div><ul><li><b>Vector of temperatures, T</b> &#8212; Temperatures at which the cell or module data for temperature-varying properties are tabulated, specified as a vector.</li></ul></div><div><ul><li><b>Single cell Ahr rating, baseline</b> &#8212; Cell capacity at the temperatures defined in the <b>Vector of temperatures, T</b> parameter, specified as a vector.</li></ul></div><div><ul><li><b>Vector of state of charge values, SOC</b> &#8212; Range of values between 0 and 1 at which the cell electrical parameters are defined, specified as a vector.</li></ul></div><div><ul><li><b>No load voltage, V0</b> &#8212; Cell open-circuit potential values at different <b>Vector of state of charge values, SOC</b> and <b>Vector of temperatures, T</b> points, specified as a matrix.</li></ul></div><div><ul><li><b>Current directionality</b> &#8212; Current directionality, specified as <tt>Enabled</tt> or <tt>Disabled</tt>. This parameter defines hystersis during charge and discharge cycles.</li></ul></div><div><ul><li><b>Terminal resistance, R0</b> &#8212; Cell ohmic resistance values at different <b>Vector of state of charge values, SOC</b> and <b>Vector of temperatures, T</b> points, specified as a matrix.</li></ul></div><div><ul><li><b>Self-discharge</b> &#8212; Cell self discharge option, specified as <tt>Disabled</tt> or <tt>Enabled</tt>. If you set this parameter to <tt>Enabled</tt>, you must then specify the value of the <b>Self-discharge resistance, Rleak(T)</b> parameter. The parameter, specified as resistance, defines a resistance for cell leakage at all points defined in the <b>Vector of temperatures, T</b> parameter.</li></ul></div><div><ul><li><b>Charge dynamics</b> &#8212; Options to select cell dynamics, specified as <tt>no dynamics</tt>, <tt>one time-constant dynamics</tt>, <tt>two time-constant dynamics</tt>, <tt>three time-constant dynamics</tt>, <tt>four time-constant dynamics</tt> or <tt>five time-constant dynamics</tt>.</li></ul></div><div><ul><li><b>Polarization resistance</b> &#8212; Polarization resistance values at different <b>Vector of state of charge values, SOC</b> and <b>Vector of temperatures, T</b> points, specified as a matrix. You must specify the value of <b>Polarization resistance</b> parameter based on the value of  <b>Charge dynamics</b> parameter.</li></ul></div><div><ul><li><b>Time constant</b> &#8212; Time constant at different <b>Vector of state of charge values, SOC</b> and <b>Vector of temperatures, T</b> points, specified as a matrix. You must specify the value of <b>Time constant</b> parameter based on the value of  <b>Charge dynamics</b> parameter.</li></ul></div><h2 id="4">Battery <b>Cell Capacity Fade</b> Parameters</h2><p>If you set the <b>Fade characteristics</b> parameter of the Battery (Table- based) block to <tt>Equations</tt>, specify the parameters <b>Number of discharge cycles, N</b>, <b>Change in no-load voltage after N discharge cycles (%)</b>, <b>Change in terminal resistance after N discharge cycles (%)</b>, <b>Change in ampere-hour rating after N discharge cycles (%)</b> and the <b>Change in polarization resistance after N discharge cycles (%)</b>.</p><h2 id="5">Battery <b>Cell Thermal</b> Parameters</h2><div><ul><li><b>Cell thermal mass</b> &#8212; Thermal mass of a single cell, specified as a scalar.</li></ul></div><div><ul><li><b>Cell thermal conductivity</b> &#8212; Cell through-plane conductivity for <tt>pouch</tt> and <tt>can</tt> cells, or the radial conductivity for <tt>cylindrical</tt> cells, specified as a scalar.</li></ul></div><h2 id="6">Battery <b>Module Electrical</b> Parameters</h2><div><ul><li><b>Number of series connected cells Ns</b> &#8212; Number of strings in series, specified as an integer.</li></ul></div><div><ul><li><b>Number of parallel connected cells Np</b> &#8212; Number of parallel-cells in a string, specified as an integer.</li></ul></div><div><ul><li><b>Choose cell type</b> &#8212; Type of cell, specified as either <tt>Pouch</tt>, <tt>Can</tt>, <tt>Compact cylindrical</tt>, or <tt>Regular cylindrical</tt>.</li></ul></div><p><img vspace="5" hspace="5" src="batteryModuleDoc_cellType01.png" alt=""> </p><p><img vspace="5" hspace="5" src="batteryModuleDoc_cellType02.png" alt=""> </p><div><ul><li><b>Cell height</b> &#8212; Cell height, specified as a scalar.</li></ul></div><div><ul><li><b>Cell width</b> &#8212; Cell width for <tt>Pouch</tt> and <tt>Can</tt> cells, specified as a scalar.</li></ul></div><div><ul><li><b>Cell thickness</b> &#8212; Cell thickness for <tt>Pouch</tt> or <tt>Can</tt> cells, specified as a scalar.</li></ul></div><div><ul><li><b>Cell diameter</b> &#8212; Cell diameter for <tt>Compact cylindrical</tt> or <tt>Regular cylindrical</tt>, specified as a scalar.</li></ul></div><div><ul><li><b>Number of cylindrical cells in a straight line</b> &#8212; Number of cylindrical cells arranged in a straight line for packaging, specified as an integer.</li></ul></div><div><ul><li><b>Accessory total resistance</b> &#8212; Resistance that combines all inline resistance in a module, specified as a scalar. This resistance is the sum of cell tab, busbar, cable and/or weld resistances, specified as a scalar.</li></ul></div><div><ul><li><b>Cell balancing</b> &#8212; Cell balancing method, specified as either <tt>none</tt> or <tt>passive</tt>. In this example, this parameter is set to <tt>passive</tt>. Upon selection of <tt>passive</tt> cell balancing, four parameters become visible. These parameters are: <b>Shunt resistor</b>, <b>Switch closed resistance</b>, <b>Switch open conductance</b> and <b>Switch operation threshold</b>. Passive cell balancing is shown schematically in the figure below:</li></ul></div><p><img vspace="5" hspace="5" src="batteryModuleDoc_cellBalancing.png" alt=""> </p><h2 id="7">Battery <b>Module Thermal</b> Parameters</h2><div><ul><li><b>Select module thermal management</b> &#8212; Whether to activate thermal management in the module, specified as either <tt>None</tt> or <tt>Active</tt>. If you select <b>Select module thermal management</b> to <tt>Active</tt>, the option to specify heat transfer on the six sides of the module is visible. If you select <b>Select module thermal management</b> to <tt>None</tt> is selected, then <b>Heat transfer coefficient to ambient</b> is visible. All sides of the module lose heat at a rate defined by this heat transfer coefficient value.</li></ul></div><p>The figure shows the labels of the six sides of the module. Each side of the module has four options for heat transfer &#8212; <tt>Detailed thermal output</tt>, <tt>Lumped thermal port</tt>, <tt>Thermal lookup table</tt>, or <tt>Convection boundary</tt>.</p><p><img vspace="5" hspace="5" src="batteryModuleDoc_moduleThermal.png" alt=""> </p><div><ul><li><tt>Detailed thermal output</tt> enables thermal node of each cell to be connected to other thermal components and is provided through a output node. This is useful when detailed thermal analysis and information for every cell is required. Each cell then loses heat at a different rate. You can connect a detailed fluids component to the output port of the battery to help in design optimization studies (example : cell-to-cell cooling variation).</li></ul></div><div><ul><li><tt>Lumped thermal port</tt>, connects every cell to the same thermal node externally.</li></ul></div><div><ul><li><tt>Convection Boundary</tt> specifies a convection boundary condition on the module face, with its own heat transfer coefficient.</li></ul></div><div><ul><li><tt>Thermal lookup table</tt> method specifies the heat transfer from battery cells to the coolant using a lookup table method. The lookup table, for thermal resistance (W/K) values at multiple temperature and flowrate points, is defined for all the cells in the module. The range of temperature and flowrate for coolant are defined in <b>Vector of temperatures for LUT thermal model, Tc</b> and <b>Vector of coolant flow rates, L</b>, respectively. The <b>Effective rate of coolant heat transfer from each cell</b> is a 3-D matrix of size [T,F,C] where, <b>T</b> is the size of <b>Vector of temperatures for LUT thermal model, Tc</b>, <b>F</b> is the size of <b>Vector of coolant flow rates, L</b> and <b>C</b> is equal to the number of cells in the module, <b>Ns</b> X <b>Np</b>. The values of the matrix are calculated using <tt>Detailed thermal output</tt> or 3-D methods such as computational fluid dynamics. The values of the matrix depend on the actual hardware design of the cooling system or cold plates in the module. The 3D matrix is described schematically in the figure below:</li></ul></div><p><img vspace="5" hspace="5" src="batteryModuleDoc_LUTbasedThermal.png" alt=""> </p><p>The 3D matrix defines thermal resistance values at multiple temperature and flowrate points. During the simulation, the actual value is picked based on <b>FlwR</b> and <b>FlwT</b>. <b>FlwR</b> and <b>FlwT</b> specify coolant flowrate and inlet temperature based on the values set.</p><p><b>FlwR</b> &#8212; Value between 0 and 1, specified as a scalar. The <b>FlwR</b> input value is used to dynamically choose the right value of the flow rate during the simulations. The value of the <b>FlwR</b> input defines the actual flow rate in the module. In the <b>Vector of coolant flow rates, L</b> parameter, <b>FlwR</b> equal to 0 means no flow, while <b>FlwR</b> equal to 1 means highest flow rate value.</p><p><b>FlwT</b> &#8212; Positive or negative value that, when summed to the ambient temperature, equals the coolant inlet temperature. A value of +15 for the <b>FlwT</b> input and 273.15 K at the <b>Amb</b> port makes the coolant inlet temperature equal to 273.15 + 15 = 288.15K. A value of -15 for the <b>FlwT</b> input and 273.15 K at the <b>Amb</b> makes the coolant inlet temperature equal to 273.15 - 15 = 258.15 K.</p><p><img vspace="5" hspace="5" src="batteryModuleDoc_moduleThermalExample.png" alt=""> </p><p>To open the above example, run the command on MATLAB command prompt: uiopen('Overview/batteryModuleDoc_example.slx',1)</p><div><ul><li><b>External heat</b> &#8212; External heat input to each cell in a module due to a hot component placed near the module, specified as a vector.</li></ul></div><h2 id="8">Battery Module <b>Cell-to-Cell Variation</b> Parameters</h2><div><ul><li><b>Vector of initial cell temperature</b> &#8212; Cell initial temperature, specified as a vector.</li></ul></div><div><ul><li><b>Vector of initial cell state of charge</b> &#8212; Cell initial state of charge, specified as a vector.</li></ul></div><div><ul><li><b>Cell Ahr rating variation</b> &#8212; Cell-to-cell variations in cell capacity at all <b>Vector of temperatures, T</b> points for each cell, specified as a vector of scalar values. If you set this array to 1, all cell capacity is the same. The array values for a cell are multiplied with the value specified in the <b>Single cell Ahr rating, baseline</b> parameter to calculate the actual capacity or the Ahr rating of the cell.</li></ul></div><div><ul><li><b>Cell terminal resistance R0 variation from baseline</b> &#8212; Cell-to-cell variations in cell terminal resistance, specified as a vector of scalar values. If you set this array to 1, all cell terminal resistance values are the same. The array values for a cell are multiplied with the value specified in the <b>Terminal resistance, R0</b> parameter to calculate the actual terminal resistance value for the cell.</li></ul></div><div><ul><li><b>Cell Self-discharge resistance variation from baseline Rleak</b> &#8212; Cell- to-cell self-discharge, specified as a vector of scalar values. This parameter is visible if <b>Self-discharge</b> is <tt>Enabled</tt>. If you set this array to 1, all cell self discharge values are the same. The array values for a cell are multiplied with the value specified in the <b>Self-discharge resistance, Rleak(T)</b> parameter to calculate the self-discharge resistance value for the cell.</li></ul></div><h2 id="9">Appendix-A</h2><p><img vspace="5" hspace="5" src="batteryModuleDoc_appendixA.png" alt=""> </p><h2 id="10">Appendix-B</h2><p>The best and the worst cell is automatically selected based on the user input for:</p><div><ul><li><b>Effective rate of coolant heat transfer from each cell</b> (if the <tt>Thermal lookup table</tt> is selected on a module side for the battery thermal management),</li><li><b>Cell terminal resistance R0 variation from baseline</b>,</li><li><b>Cell Ahr rating variation</b>,</li><li><b>Cell Self-discharge resistance variation from baseline Rleak</b> and</li><li><b>External heat</b></li></ul></div><p>If the module thermal management does not use the option <tt>Thermal lookup table</tt>, the best and the worst cells cannot be selected based on the same. The cooling effect variation and best/worst cell cannot be found out or determined if <tt>Detailed thermal output</tt> or the <tt>Lumped thermal port</tt> is used for module thermal management. In that case, the best and worst cells are decided based on:</p><div><ul><li><b>Cell terminal resistance R0 variation from baseline</b>,</li><li><b>Cell Ahr rating variation</b>,</li><li><b>Cell Self-discharge resistance variation from baseline Rleak</b> and</li><li><b>External heat</b></li></ul></div><p>The code checks for cell-to-cell variation in the data for these parameters and skips the ones that have no variation present. If multiple parameters are defined with cell-to-cell variations, the best ad the worst cells are decided based on cell indices as per the parameter preference list above. These details are present in file <tt>getGroupedModelIndexFinal.m</tt>.</p><p>In scenarios where multiple parameters are defined with cell-to-cell variations, it is important that the cell indices for the best and worst cells are same for all parameters, else the variation effect would be smoothed out in averaging and group-creation (<tt>Grouped</tt> model fidelity) for large modules. You will be able to simulate with warning messages if the cell indices for the best and worst cells differ for different parameters.</p><p class="footer">Copyright 2020-2023 The MathWorks, Inc.<br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2023a</a><br></p></div><!--
+  </style>
+</head>
+<body>
+<div class="content">
+<h1>Battery Module Parameters and Documentation</h1>
+<!--introduction-->
+<p>This document details various options available for use in the Battery Module Simscape&trade; custom component.</p>
+<!--/introduction-->
+<h2>Contents</h2>
+<div>
+<ul>
+<li>
+<a href="#1">Battery Module Overview</a>
+</li>
+<li>
+<a href="#2"><b>Model Fidelity</b></a>
+</li>
+<li>
+<a href="#3">Battery <b>Cell Electrical</b> Parameters</a>
+</li>
+<li>
+<a href="#4">Battery <b>Cell Capacity Fade</b> Parameters</a>
+</li>
+<li>
+<a href="#5">Battery <b>Cell Thermal</b> Parameters</a>
+</li>
+<li>
+<a href="#6">Battery <b>Module Electrical</b> Parameters</a>
+</li>
+<li>
+<a href="#7">Battery <b>Module Thermal</b> Parameters</a>
+</li>
+<li>
+<a href="#8">Battery Module <b>Cell-to-Cell Variation</b> Parameters</a>
+</li>
+<li>
+<a href="#9">Appendix-A</a>
+</li>
+<li>
+<a href="#10">Appendix-B</a>
+</li>
+</ul>
+</div>
+<h2 id="1">Battery Module Overview</h2>
+<p>A Battery Module is defined as a collection of a number of cells in series and / or parallel. A Battery (Table-based) block from the Simscape Electrical library models the battery cell. You can specify the cell-to-cell variations by modifying the relevant parameters inside the custom component. Each module has six sides and you can choose from four different thermal options for each side.</p>
+<h2 id="2">
+<b>Model Fidelity</b>
+</h2>
+<div>
+<ul>
+<li>
+<b>Select Model Fidelity</b> &mdash; Modeling compexity of the Battery Module component, specified as <tt>Detailed</tt>, <tt>Grouped</tt>, or <tt>Lumped</tt>. <tt>Detailed</tt> model tracks each and every cell in the system. <tt>Lumped</tt> model tracks the whole module as a single unit or as lumped. <tt>Grouped</tt> model tracks the best and the worst cell in the module. The best and the worst cell is determined based on the cell-to-cell variation specified in <b>Effective rate of coolant heat transfer from each cell</b>, <b>Cell terminal resistance R0 variation from baseline</b>, <b>Cell Ahr rating variation</b>, <b>Cell Self- discharge resistance variation from baseline Rleak</b>, or <b>External heat</b>. For more information on the model fidelity, see table in the Appendix-A section. <tt>Grouped</tt> model working principle is shown in the image below. For more information on the <tt>Grouped</tt> model fidelity, see Appendix-B.</li>
+</ul>
+</div>
+<p>
+<img vspace="5" hspace="5" src="batteryModuleDoc_groupedModel.png" alt=""> </p>
+<h2 id="3">Battery <b>Cell Electrical</b> Parameters</h2>
+<p>For the Battery Cell (Table-based) block in the Simscape Electrical library, you can specify these parameters:</p>
+<div>
+<ul>
+<li>
+<b>Vector of temperatures, T</b> &mdash; Temperatures at which the cell or module data for temperature-varying properties are tabulated, specified as a vector.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Single cell Ahr rating, baseline</b> &mdash; Cell capacity at the temperatures defined in the <b>Vector of temperatures, T</b> parameter, specified as a vector.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Vector of state of charge values, SOC</b> &mdash; Range of values between 0 and 1 at which the cell electrical parameters are defined, specified as a vector.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>No load voltage, V0</b> &mdash; Cell open-circuit potential values at different <b>Vector of state of charge values, SOC</b> and <b>Vector of temperatures, T</b> points, specified as a matrix.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Current directionality</b> &mdash; Current directionality, specified as <tt>Enabled</tt> or <tt>Disabled</tt>. This parameter defines hystersis during charge and discharge cycles.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Terminal resistance, R0</b> &mdash; Cell ohmic resistance values at different <b>Vector of state of charge values, SOC</b> and <b>Vector of temperatures, T</b> points, specified as a matrix.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Self-discharge</b> &mdash; Cell self discharge option, specified as <tt>Disabled</tt> or <tt>Enabled</tt>. If you set this parameter to <tt>Enabled</tt>, you must then specify the value of the <b>Self-discharge resistance, Rleak(T)</b> parameter. The parameter, specified as resistance, defines a resistance for cell leakage at all points defined in the <b>Vector of temperatures, T</b> parameter.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Charge dynamics</b> &mdash; Options to select cell dynamics, specified as <tt>no dynamics</tt>, <tt>one time-constant dynamics</tt>, <tt>two time-constant dynamics</tt>, <tt>three time-constant dynamics</tt>, <tt>four time-constant dynamics</tt> or <tt>five time-constant dynamics</tt>.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Polarization resistance</b> &mdash; Polarization resistance values at different <b>Vector of state of charge values, SOC</b> and <b>Vector of temperatures, T</b> points, specified as a matrix. You must specify the value of <b>Polarization resistance</b> parameter based on the value of <b>Charge dynamics</b> parameter.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Time constant</b> &mdash; Time constant at different <b>Vector of state of charge values, SOC</b> and <b>Vector of temperatures, T</b> points, specified as a matrix. You must specify the value of <b>Time constant</b> parameter based on the value of <b>Charge dynamics</b> parameter.</li>
+</ul>
+</div>
+<h2 id="4">Battery <b>Cell Capacity Fade</b> Parameters</h2>
+<p>If you set the <b>Fade characteristics</b> parameter of the Battery (Table- based) block to <tt>Equations</tt>, specify the parameters <b>Number of discharge cycles, N</b>, <b>Change in no-load voltage after N discharge cycles (%)</b>, <b>Change in terminal resistance after N discharge cycles (%)</b>, <b>Change in ampere-hour rating after N discharge cycles (%)</b> and the <b>Change in polarization resistance after N discharge cycles (%)</b>.</p>
+<h2 id="5">Battery <b>Cell Thermal</b> Parameters</h2>
+<div>
+<ul>
+<li>
+<b>Cell thermal mass</b> &mdash; Thermal mass of a single cell, specified as a scalar.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Cell thermal conductivity</b> &mdash; Cell through-plane conductivity for <tt>pouch</tt> and <tt>can</tt> cells, or the radial conductivity for <tt>cylindrical</tt> cells, specified as a scalar.</li>
+</ul>
+</div>
+<h2 id="6">Battery <b>Module Electrical</b> Parameters</h2>
+<div>
+<ul>
+<li>
+<b>Number of series connected cells Ns</b> &mdash; Number of strings in series, specified as an integer.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Number of parallel connected cells Np</b> &mdash; Number of parallel-cells in a string, specified as an integer.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Choose cell type</b> &mdash; Type of cell, specified as either <tt>Pouch</tt>, <tt>Can</tt>, <tt>Compact cylindrical</tt>, or <tt>Regular cylindrical</tt>.</li>
+</ul>
+</div>
+<p>
+<img vspace="5" hspace="5" src="batteryModuleDoc_cellType01.png" alt=""> </p>
+<p>
+<img vspace="5" hspace="5" src="batteryModuleDoc_cellType02.png" alt=""> </p>
+<div>
+<ul>
+<li>
+<b>Cell height</b> &mdash; Cell height, specified as a scalar.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Cell width</b> &mdash; Cell width for <tt>Pouch</tt> and <tt>Can</tt> cells, specified as a scalar.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Cell thickness</b> &mdash; Cell thickness for <tt>Pouch</tt> or <tt>Can</tt> cells, specified as a scalar.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Cell diameter</b> &mdash; Cell diameter for <tt>Compact cylindrical</tt> or <tt>Regular cylindrical</tt>, specified as a scalar.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Number of cylindrical cells in a straight line</b> &mdash; Number of cylindrical cells arranged in a straight line for packaging, specified as an integer.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Accessory total resistance</b> &mdash; Resistance that combines all inline resistance in a module, specified as a scalar. This resistance is the sum of cell tab, busbar, cable and/or weld resistances, specified as a scalar.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Cell balancing</b> &mdash; Cell balancing method, specified as either <tt>none</tt> or <tt>passive</tt>. In this example, this parameter is set to <tt>passive</tt>. Upon selection of <tt>passive</tt> cell balancing, four parameters become visible. These parameters are: <b>Shunt resistor</b>, <b>Switch closed resistance</b>, <b>Switch open conductance</b> and <b>Switch operation threshold</b>. Passive cell balancing is shown schematically in the figure below:</li>
+</ul>
+</div>
+<p>
+<img vspace="5" hspace="5" src="batteryModuleDoc_cellBalancing.png" alt=""> </p>
+<h2 id="7">Battery <b>Module Thermal</b> Parameters</h2>
+<div>
+<ul>
+<li>
+<b>Select module thermal management</b> &mdash; Whether to activate thermal management in the module, specified as either <tt>None</tt> or <tt>Active</tt>. If you select <b>Select module thermal management</b> to <tt>Active</tt>, the option to specify heat transfer on the six sides of the module is visible. If you select <b>Select module thermal management</b> to <tt>None</tt> is selected, then <b>Heat transfer coefficient to ambient</b> is visible. All sides of the module lose heat at a rate defined by this heat transfer coefficient value.</li>
+</ul>
+</div>
+<p>The figure shows the labels of the six sides of the module. Each side of the module has four options for heat transfer &mdash; <tt>Detailed thermal output</tt>, <tt>Lumped thermal port</tt>, <tt>Thermal lookup table</tt>, or <tt>Convection boundary</tt>.</p>
+<p>
+<img vspace="5" hspace="5" src="batteryModuleDoc_moduleThermal.png" alt=""> </p>
+<div>
+<ul>
+<li>
+<tt>Detailed thermal output</tt> enables thermal node of each cell to be connected to other thermal components and is provided through a output node. This is useful when detailed thermal analysis and information for every cell is required. Each cell then loses heat at a different rate. You can connect a detailed fluids component to the output port of the battery to help in design optimization studies (example : cell-to-cell cooling variation).</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<tt>Lumped thermal port</tt>, connects every cell to the same thermal node externally.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<tt>Convection Boundary</tt> specifies a convection boundary condition on the module face, with its own heat transfer coefficient.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<tt>Thermal lookup table</tt> method specifies the heat transfer from battery cells to the coolant using a lookup table method. The lookup table, for thermal resistance (W/K) values at multiple temperature and flowrate points, is defined for all the cells in the module. The range of temperature and flowrate for coolant are defined in <b>Vector of temperatures for LUT thermal model, Tc</b> and <b>Vector of coolant flow rates, L</b>, respectively. The <b>Effective rate of coolant heat transfer from each cell</b> is a 3-D matrix of size [T,F,C] where, <b>T</b> is the size of <b>Vector of temperatures for LUT thermal model, Tc</b>, <b>F</b> is the size of <b>Vector of coolant flow rates, L</b> and <b>C</b> is equal to the number of cells in the module, <b>Ns</b> X <b>Np</b>. The values of the matrix are calculated using <tt>Detailed thermal output</tt> or 3-D methods such as computational fluid dynamics. The values of the matrix depend on the actual hardware design of the cooling system or cold plates in the module. The 3D matrix is described schematically in the figure below:</li>
+</ul>
+</div>
+<p>
+<img vspace="5" hspace="5" src="batteryModuleDoc_LUTbasedThermal.png" alt=""> </p>
+<p>The 3D matrix defines thermal resistance values at multiple temperature and flowrate points. During the simulation, the actual value is picked based on <b>FlwR</b> and <b>FlwT</b>. <b>FlwR</b> and <b>FlwT</b> specify coolant flowrate and inlet temperature based on the values set.</p>
+<p>
+<b>FlwR</b> &mdash; Value between 0 and 1, specified as a scalar. The <b>FlwR</b> input value is used to dynamically choose the right value of the flow rate during the simulations. The value of the <b>FlwR</b> input defines the actual flow rate in the module. In the <b>Vector of coolant flow rates, L</b> parameter, <b>FlwR</b> equal to 0 means no flow, while <b>FlwR</b> equal to 1 means highest flow rate value.</p>
+<p>
+<b>FlwT</b> &mdash; Positive or negative value that, when summed to the ambient temperature, equals the coolant inlet temperature. A value of +15 for the <b>FlwT</b> input and 273.15 K at the <b>Amb</b> port makes the coolant inlet temperature equal to 273.15 + 15 = 288.15K. A value of -15 for the <b>FlwT</b> input and 273.15 K at the <b>Amb</b> makes the coolant inlet temperature equal to 273.15 - 15 = 258.15 K.</p>
+<p>
+<img vspace="5" hspace="5" src="batteryModuleDoc_moduleThermalExample.png" alt=""> </p>
+<p>To open the above example, run the command on MATLAB command prompt: uiopen('Overview/batteryModuleDoc_example.slx',1)</p>
+<div>
+<ul>
+<li>
+<b>External heat</b> &mdash; External heat input to each cell in a module due to a hot component placed near the module, specified as a vector.</li>
+</ul>
+</div>
+<h2 id="8">Battery Module <b>Cell-to-Cell Variation</b> Parameters</h2>
+<div>
+<ul>
+<li>
+<b>Vector of initial cell temperature</b> &mdash; Cell initial temperature, specified as a vector.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Vector of initial cell state of charge</b> &mdash; Cell initial state of charge, specified as a vector.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Cell Ahr rating variation</b> &mdash; Cell-to-cell variations in cell capacity at all <b>Vector of temperatures, T</b> points for each cell, specified as a vector of scalar values. If you set this array to 1, all cell capacity is the same. The array values for a cell are multiplied with the value specified in the <b>Single cell Ahr rating, baseline</b> parameter to calculate the actual capacity or the Ahr rating of the cell.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Cell terminal resistance R0 variation from baseline</b> &mdash; Cell-to-cell variations in cell terminal resistance, specified as a vector of scalar values. If you set this array to 1, all cell terminal resistance values are the same. The array values for a cell are multiplied with the value specified in the <b>Terminal resistance, R0</b> parameter to calculate the actual terminal resistance value for the cell.</li>
+</ul>
+</div>
+<div>
+<ul>
+<li>
+<b>Cell Self-discharge resistance variation from baseline Rleak</b> &mdash; Cell- to-cell self-discharge, specified as a vector of scalar values. This parameter is visible if <b>Self-discharge</b> is <tt>Enabled</tt>. If you set this array to 1, all cell self discharge values are the same. The array values for a cell are multiplied with the value specified in the <b>Self-discharge resistance, Rleak(T)</b> parameter to calculate the self-discharge resistance value for the cell.</li>
+</ul>
+</div>
+<h2 id="9">Appendix-A</h2>
+<p>
+<img vspace="5" hspace="5" src="batteryModuleDoc_appendixA.png" alt=""> </p>
+<h2 id="10">Appendix-B</h2>
+<p>The best and the worst cell is automatically selected based on the user input for:</p>
+<div>
+<ul>
+<li>
+<b>Effective rate of coolant heat transfer from each cell</b> (if the <tt>Thermal lookup table</tt> is selected on a module side for the battery thermal management),</li>
+<li>
+<b>Cell terminal resistance R0 variation from baseline</b>,</li>
+<li>
+<b>Cell Ahr rating variation</b>,</li>
+<li>
+<b>Cell Self-discharge resistance variation from baseline Rleak</b> and</li>
+<li>
+<b>External heat</b>
+</li>
+</ul>
+</div>
+<p>If the module thermal management does not use the option <tt>Thermal lookup table</tt>, the best and the worst cells cannot be selected based on the same. The cooling effect variation and best/worst cell cannot be found out or determined if <tt>Detailed thermal output</tt> or the <tt>Lumped thermal port</tt> is used for module thermal management. In that case, the best and worst cells are decided based on:</p>
+<div>
+<ul>
+<li>
+<b>Cell terminal resistance R0 variation from baseline</b>,</li>
+<li>
+<b>Cell Ahr rating variation</b>,</li>
+<li>
+<b>Cell Self-discharge resistance variation from baseline Rleak</b> and</li>
+<li>
+<b>External heat</b>
+</li>
+</ul>
+</div>
+<p>The code checks for cell-to-cell variation in the data for these parameters and skips the ones that have no variation present. If multiple parameters are defined with cell-to-cell variations, the best ad the worst cells are decided based on cell indices as per the parameter preference list above. These details are present in file <tt>getGroupedModelIndexFinal.m</tt>.</p>
+<p>In scenarios where multiple parameters are defined with cell-to-cell variations, it is important that the cell indices for the best and worst cells are same for all parameters, else the variation effect would be smoothed out in averaging and group-creation (<tt>Grouped</tt> model fidelity) for large modules. You will be able to simulate with warning messages if the cell indices for the best and worst cells differ for different parameters.</p>
+<p class="footer">Copyright 2020-2023 The MathWorks, Inc.<br>
+<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2023b</a>
+<br>
+</p>
+</div>
+<!--
 ##### SOURCE BEGIN #####
 %% Battery Module Parameters and Documentation 
 % 
@@ -376,4 +703,6 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 ##### SOURCE END #####
---></body></html>
+-->
+</body>
+</html>

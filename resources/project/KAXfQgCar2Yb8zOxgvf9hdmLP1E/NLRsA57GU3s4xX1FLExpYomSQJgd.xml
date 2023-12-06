@@ -1,2 +1,2 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<Info Type="Basic" GroupUUID="0710179c-9112-45f1-95f4-f181374da415" Visible="1" Icon="" File="Models/Battery_Management_System.slx" Name="Battery Management System"/>
+<Info File="Models/Battery_Management_System.slx" GroupUUID="0710179c-9112-45f1-95f4-f181374da415" Icon="" Name="Battery Management System" Type="Basic" Visible="1"/>
