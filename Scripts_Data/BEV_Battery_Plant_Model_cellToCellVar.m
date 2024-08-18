@@ -2,7 +2,7 @@
 % on best/worst cooled cells to maximize impact of the variations
 % 
 
-% Copyright 2020-2023 The MathWorks, Inc.
+% Copyright 2020-2024 The MathWorks, Inc.
 
 disp('Setup cell-to-cell variations')
 %

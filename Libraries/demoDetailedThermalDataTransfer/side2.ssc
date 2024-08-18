@@ -1,5 +1,5 @@
 component side2
-    % Copyright 2020-2023 The MathWorks, Inc.
+    % Copyright 2020-2024 The MathWorks, Inc.
 
     nodes
         a = foundation.thermal.thermal; % a:right

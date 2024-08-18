@@ -9,7 +9,7 @@ component(Hidden=true) batteryCellThermalLUTmodel < foundation.thermal.branch
 % [frac*max(Fvec)] and coolant inlet temperature [T - delT] values in the 
 % calling component (Battery Module)
 %
-% Copyright 2020-2023 The MathWorks, Inc.
+% Copyright 2020-2024 The MathWorks, Inc.
 
 inputs
    frac = 0;       % Fraction of the max flow rate 

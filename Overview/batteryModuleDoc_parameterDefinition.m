@@ -3,7 +3,7 @@
 % This document details various options available for use in the Battery
 % Module Simscape(TM) custom component.
 % 
-% Copyright 2020-2023 The MathWorks, Inc.
+% Copyright 2020-2024 The MathWorks, Inc.
 
 %% Battery Module Overview
 % 

@@ -1,5 +1,5 @@
 function [indx1,indx2] = getGroupedModelIndexCheck(vector1D,Np,isItForCooling)
-% Copyright 2020-2023 The MathWorks, Inc.
+% Copyright 2020-2024 The MathWorks, Inc.
 
     val1=max(vector1D);
     res1=find(val1==vector1D);

@@ -1,5 +1,5 @@
 function data = getNumOfCylindricalSectionContact_S(cellIndx,x,sectionData,nCell,indx)
-% Copyright 2020-2023 The MathWorks, Inc.
+% Copyright 2020-2024 The MathWorks, Inc.
 
     % Output data of size 1+nCell
     % Input data : 

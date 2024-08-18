@@ -1,5 +1,5 @@
 function groupedVal = getGroupedModelParam3Dvec(param_val,cellIndex5Section,thermalLUT_selected)
-% Copyright 2020-2023 The MathWorks, Inc.
+% Copyright 2020-2024 The MathWorks, Inc.
 
     if thermalLUT_selected == 1
         i=cellIndex5Section(1);

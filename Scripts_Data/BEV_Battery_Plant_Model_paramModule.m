@@ -1,7 +1,7 @@
 %% Parameters for battery_module_design
 % 
 
-% Copyright 2020-2023 The MathWorks, Inc.
+% Copyright 2020-2024 The MathWorks, Inc.
 
 %% Battery Module : Cell Electrical
 battery_vecT=[273.15, 298.15, 323.15]; % [K]

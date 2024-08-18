@@ -1,5 +1,5 @@
 function data = getNumOfCylindricalCellsContact(x,Ns,Np,indx)
-% Copyright 2020-2023 The MathWorks, Inc.
+% Copyright 2020-2024 The MathWorks, Inc.
 
     % Output data of size 1+Ns*Np
     data=zeros(1,Ns*Np+1);

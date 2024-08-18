@@ -1,7 +1,7 @@
 % Code to plot simulation results from Battery_Management_System
 %% Plot Description:
 %
-% Copyright 2021-2023 The MathWorks, Inc.
+% Copyright 2021-2024 The MathWorks, Inc.
 
 % Generate new simulation results if they don't exist or if they need to be updated
 if ~exist('simlog_Battery_Management_System', 'var') || ...

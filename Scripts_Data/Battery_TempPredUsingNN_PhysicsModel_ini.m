@@ -1,7 +1,7 @@
 %% Parameters for Lithium-Ion Battery Pack cooling example
 % Battery cooling example setup and workspace variables
 
-% Copyright 2020-2023 The MathWorks, Inc.
+% Copyright 2020-2024 The MathWorks, Inc.
 
 coolantTemp=298.15;   % Coolant inlet T in K
 ambient=298.15;       % Ambient temperature in K

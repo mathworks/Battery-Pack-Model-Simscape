@@ -1,7 +1,7 @@
 classdef batteryTypeSelection < int32
 % Battery type selection definition.
 %    
-% Copyright 2020-2023 The MathWorks, Inc.
+% Copyright 2020-2024 The MathWorks, Inc.
 % 
     enumeration
         pouch              (1)

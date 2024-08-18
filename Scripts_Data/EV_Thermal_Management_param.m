@@ -1,7 +1,7 @@
 %% Parameters for ev_thermal_management
 % 
 
-% Copyright 2020-2023 The MathWorks, Inc.
+% Copyright 2020-2024 The MathWorks, Inc.
 
 % Configure scenario (see code):
 %     (1) drive cycle,  set <user_selection> == 1

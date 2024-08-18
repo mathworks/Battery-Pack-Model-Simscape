@@ -16,7 +16,7 @@ function [indx1,indx2] = getGroupedModelIndexFinal(thermalLUT_selected,calcFinal
 %                  6) No variation present => Choose based on _Coolant entry
 % -------------------------------------------------------------------------
 %
-% Copyright 2020-2023 The MathWorks, Inc.
+% Copyright 2020-2024 The MathWorks, Inc.
 
 if thermalLUT_selected == 1
     if calcFinalIndices(1,1) > 0

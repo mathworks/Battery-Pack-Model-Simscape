@@ -1,5 +1,5 @@
 function [indx_cv01,indx_cv02,indx_cv03,indx_cv04,indx_cv05] = getGroupedModelFiveSections(indxCell1,indxCell2,Ns,Np)
-% Copyright 2020-2023 The MathWorks, Inc.
+% Copyright 2020-2024 The MathWorks, Inc.
 
     indx_cv001=max(Np,indxCell1-Np);
     indx_cv002=indx_cv001+Np;
