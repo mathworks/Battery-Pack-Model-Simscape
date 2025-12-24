@@ -8,7 +8,7 @@ component batteryMultiDimModel
 % Electrical library. Three different battery modeling fidelity are 
 % available for selection and use.
 
-% Copyright 2020-2024 The MathWorks, Inc.
+% Copyright 2020-2025 The MathWorks, Inc.
 
 % -------------------------------------------------------------------------
 % How to read the code below :

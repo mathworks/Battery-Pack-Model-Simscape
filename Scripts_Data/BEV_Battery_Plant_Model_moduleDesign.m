@@ -1,7 +1,7 @@
 %% Design Iterations for finding optimum number of channels for cooling
 % 
 
-% Copyright 2020-2024 The MathWorks, Inc.
+% Copyright 2020-2025 The MathWorks, Inc.
 
 iterSize=max(size(nChannel_options));
 battery_result=zeros(iterSize,4);  

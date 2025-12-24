@@ -2,7 +2,7 @@
 % based approach
 % 
 
-% Copyright 2020-2024 The MathWorks, Inc.
+% Copyright 2020-2025 The MathWorks, Inc.
 
 disp('Start battery pack simulations')
 %

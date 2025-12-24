@@ -1,7 +1,7 @@
 classdef batteryCellVoltages < int32
 % Battery type selection definition.
     
-% Copyright 2020-2024 The MathWorks, Inc.
+% Copyright 2020-2025 The MathWorks, Inc.
     enumeration
         no     (1)
         yes    (2)

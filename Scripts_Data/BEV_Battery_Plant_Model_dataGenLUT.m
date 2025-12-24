@@ -1,7 +1,7 @@
 %% Data generation for thermal Lookup Table based approach
 % 
 
-% Copyright 2020-2024 The MathWorks, Inc.
+% Copyright 2020-2025 The MathWorks, Inc.
 
 BEV_Battery_Plant_Model_paramModule;
 coolantPlate_area=battery_cellW*battery_Ns*battery_Np*battery_cellT;

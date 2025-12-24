@@ -1,5 +1,5 @@
 % Startup script for Battery Examples
-% Copyright 2020-2024 The MathWorks, Inc.
+% Copyright 2020-2025 The MathWorks, Inc.
 
 curr_proj = simulinkproject;
 cd(curr_proj.RootFolder)
