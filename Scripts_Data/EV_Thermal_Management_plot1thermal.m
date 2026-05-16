@@ -1,11 +1,10 @@
 % Code to plot simulation results from EV_Thermal_Management
 %% Plot Description:
 %
-% Copyright 2020-2025 The MathWorks, Inc.
+% Copyright 2020-2026 The MathWorks, Inc.
 
 % Generate new simulation results if they don't exist or if they need to be updated
-if ~exist('simlog_EV_Thermal_Management', 'var') || ...
-        pm_simlogNeedsUpdate(simlog_EV_Thermal_Management) 
+if ~exist('simlog_EV_Thermal_Management', 'var')
     sim('EV_Thermal_Management')
 end
 

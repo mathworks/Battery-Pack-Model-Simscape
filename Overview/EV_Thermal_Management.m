@@ -37,7 +37,7 @@
 % requires the battery heater and PTC heater to warm up the batteries and
 % cabin, respectively.
 
-% Copyright 2020-2025 The MathWorks, Inc.
+% Copyright 2020-2026 The MathWorks, Inc.
 
 
 %% Model
@@ -258,14 +258,11 @@ open_system('EV_Thermal_Management/Cabin/Cabin Heat Transfer','force')
 % After about 1100 s, it switches to parallel mode and the chiller is used
 % to keep the batteries below 35 degC.
 
-set_param('EV_Thermal_Management/Scope','open','on');
 sim('EV_Thermal_Management');
+EV_Thermal_Management_plot1thermal
 
-%% 
-
-set_param('EV_Thermal_Management/Scope','open','off');
 %%
 
-clear all
+%clear all
 close all
 bdclose all

@@ -1,7 +1,7 @@
 %% Parameters for ev_thermal_management
 % 
 
-% Copyright 2020-2025 The MathWorks, Inc.
+% Copyright 2020-2026 The MathWorks, Inc.
 
 % Configure scenario (see code):
 %     (1) drive cycle,  set <user_selection> == 1
@@ -221,7 +221,8 @@ battery_thermal_K2 = 800;  % Battery cell (in-plane) thermal conductivity [W/mK]
 subsys = [bdroot '/Scenario'];
 if user_selection == 1
     % Switch signal builder group
-    signalbuilder([subsys '/Vehicle Speed [km//hr]'], 'ActiveGroup', 1) % Drive cycle
+    %signalbuilder([subsys '/Vehicle Speed [km//hr]'], 'ActiveGroup', 1) % Drive cycle
+    set_param([subsys '/Vehicle Speed'], 'ActiveScenario', 'Drive_Cycle') % Drive cycle
     % Update constant block values
     set_param([subsys '/Pressure [MPa]'], 'Value', '0.101325') % [MPa] Environment pressure
     set_param([subsys '/Temperature [degC]'], 'Value', '30') % [degC] Environment temperature
@@ -245,7 +246,9 @@ if user_selection == 1
     %
 elseif user_selection == 2
     % Switch signal builder group
-    signalbuilder([subsys '/Vehicle Speed [km//hr]'], 'ActiveGroup', 2) % Zero speed
+%    signalbuilder([subsys '/Vehicle Speed [km//hr]'], 'ActiveGroup', 2) % Zero speed
+    set_param([subsys '/Vehicle Speed'], 'ActiveScenario', 'Zero_Speed') % Zero speed
+
     % Update constant block values
     set_param([subsys '/Pressure [MPa]'], 'Value', '0.101325') % [MPa] Environment pressure
     set_param([subsys '/Temperature [degC]'], 'Value', '40') % [degC] Environment temperature
@@ -269,7 +272,8 @@ elseif user_selection == 2
     %
 elseif user_selection == 3
     % Switch signal builder group
-    signalbuilder([subsys '/Vehicle Speed [km//hr]'], 'ActiveGroup', 1) % Drive cycle
+    %signalbuilder([subsys '/Vehicle Speed [km//hr]'], 'ActiveGroup', 1) % Drive cycle
+    set_param([subsys '/Vehicle Speed'], 'ActiveScenario', 'Drive_Cycle') % Drive cycle
     % Update constant block values
     set_param([subsys '/Pressure [MPa]'], 'Value', '0.101325') % [MPa] Environment pressure
     set_param([subsys '/Temperature [degC]'], 'Value', '-10') % [degC] Environment temperature
